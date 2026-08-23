@@ -3,4 +3,5 @@ dist/
 artifacts/
 venv/
 *.log
+*.tsbuildinfo
 .DS_Store
