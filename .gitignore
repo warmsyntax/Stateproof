@@ -5,3 +5,6 @@ venv/
 *.log
 *.tsbuildinfo
 .DS_Store
+.agents/
+.aider-desk/
+skills-lock.json
