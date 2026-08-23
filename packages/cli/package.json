@@ -1,0 +1,27 @@
+{
+  "name": "@stateproof/cli",
+  "version": "0.1.0",
+  "description": "Stateproof command line: init, run, list, export",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "stateproof": "./dist/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@stateproof/core": "workspace:*",
+    "@stateproof/playwright-runner": "workspace:*"
+  }
+}
