@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-import { engineName as coreEngine } from '@stateproof/core';
-import { engineName as runnerEngine } from '@stateproof/playwright-runner';
-
 const args = process.argv.slice(2);
 
 if (args[0] === '--version' || args[0] === '-v') {
@@ -9,7 +6,5 @@ if (args[0] === '--version' || args[0] === '-v') {
   process.exit(0);
 }
 
-process.stderr.write(
-  `stateproof 0.1.0 — commands arrive in P3 (skeleton wired to ${coreEngine} + ${runnerEngine})\n`,
-);
+process.stderr.write('stateproof 0.1.0 — commands arrive in P3 (skeleton)\n');
 process.exit(2);

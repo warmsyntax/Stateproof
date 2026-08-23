@@ -5,6 +5,9 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "files": {
+    "includes": ["**", "!coverage", "!dist", "!packages/core/schema"]
+  },
   "formatter": {
     "enabled": true,
     "indentStyle": "space",

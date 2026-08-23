@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { engineName, schemaVersion } from './index.js';
+import { SCHEMA_VERSION } from './index.js';
 
 describe('core skeleton', () => {
-  it('exposes stable engine metadata', () => {
-    expect(engineName).toBe('@stateproof/core');
-    expect(schemaVersion).toBe(1);
+  it('freezes schema version at 1', () => {
+    expect(SCHEMA_VERSION).toBe(1);
   });
 });

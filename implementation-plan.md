@@ -64,19 +64,19 @@ P7 Companion + MCP    later       post-0.1 / M3·M5
 
 **Goal:** Pure logic complete and unit-tested — no Node/browser deps. Markdown + JSON card rendering only; no terminal renderer in core.
 
-- [ ] Strict JSON scenario parsing: UTF-8, no comments, no trailing commas, no JSON5/JSONC for user files; **location-aware syntax errors** (file/line) via offset-based parser (`jsonc-parser` parse errors)
-- [ ] Zod schemas matching contract §4 exactly: optional `viewports`, `expect.visible: string | string[]`, `stableMs`, `$comment`; strict (no additional properties)
-- [ ] Schema errors use **JSON path + hint** format; exact error-code registry from contract §7.5
-- [ ] Validation before browser launch for: duplicate scenario ids, duplicate viewport names, kebab-case ids/names/viewport names (`^[a-z0-9]+(-[a-z0-9]+)*$`), overly broad patterns (`*`, `**`, `**/*`, `**/**`, all-wildcard segments), cross-origin patterns, fixture path traversal/jail, fixture size ≤ 1 MB, `.json` fixture validity, body serializability (no functions/symbols/undefined/BigInt; ≤ 1 MB serialized), viewport ranges 320–3840 integer
-- [ ] Build-time `z.toJSONSchema()` script → committed `schema/v1.json` (+ drift check)
-- [ ] Request matcher: method + pathname glob match (query strings ignored), pure function, table-driven tests
-- [ ] Exit-code mapper with contract §7.3 precedence (4 > 3 > 2 > 1 > 0) incl. partial-result rule
-- [ ] Exact `RunResult` with `runId`; exact frozen `FailureCode` list (16 values, nothing else)
-- [ ] Card renderers: **Markdown + JSON envelope only** (contract §8.6/§8.7 formats; escape pipes in labels; PASS/FAIL/ERROR only)
-- [ ] Fixture secret scanner: warn by default; fail with `SECRET_SCAN_FAILED` under `--strict-secrets`
-- [ ] Vitest coverage ≥ 90% lines
+- [x] Strict JSON scenario parsing: UTF-8, no comments, no trailing commas, no JSON5/JSONC for user files; **location-aware syntax errors** (file/line) via offset-based parser (`jsonc-parser` parse errors)
+- [x] Zod schemas matching contract §4 exactly: optional `viewports`, `expect.visible: string | string[]`, `stableMs`, `$comment`; strict (no additional properties)
+- [x] Schema errors use **JSON path + hint** format; exact error-code registry from contract §7.5
+- [x] Validation before browser launch for: duplicate scenario ids, duplicate viewport names, kebab-case ids/names/viewport names (`^[a-z0-9]+(-[a-z0-9]+)*$`), overly broad patterns (`*`, `**`, `**/*`, `**/**`, all-wildcard segments), cross-origin patterns, fixture path traversal/jail, fixture size ≤ 1 MB, `.json` fixture validity, body serializability (no functions/symbols/undefined/BigInt; ≤ 1 MB serialized), viewport ranges 320–3840 integer
+- [x] Build-time `z.toJSONSchema()` script → committed `schema/v1.json` (+ drift check)
+- [x] Request matcher: method + pathname glob match (query strings ignored), pure function, table-driven tests
+- [x] Exit-code mapper with contract §7.3 precedence (4 > 3 > 2 > 1 > 0) incl. partial-result rule
+- [x] Exact `RunResult` with `runId`; exact frozen `FailureCode` list (16 values, nothing else)
+- [x] Card renderers: **Markdown + JSON envelope only** (contract §8.6/§8.7 formats; escape pipes in labels; PASS/FAIL/ERROR only)
+- [x] Fixture secret scanner: warn by default; fail with `SECRET_SCAN_FAILED` under `--strict-secrets`
+- [x] Vitest coverage ≥ 90% lines (measured: 93.9%)
 
-**Exit gate:** contract §10.1 unit-test list fully green (schema validation, duplicates, kebab-case, broad/cross-origin pattern rejection, exit-code mapping, card rendering, envelope rendering, fixture path validation, body serialization validation, secret scanner warnings).
+**Exit gate:** contract §10.1 unit-test list fully green (schema validation, duplicates, kebab-case, broad/cross-origin pattern rejection, exit-code mapping, card rendering, envelope rendering, fixture path validation, body serialization validation, secret scanner warnings). ✅ 79/79 tests.
 
 ## P2 — Runner engine (`@stateproof/playwright-runner`)
 

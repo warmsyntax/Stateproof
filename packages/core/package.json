@@ -11,10 +11,20 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "schema"
   ],
   "scripts": {
     "build": "tsc -b",
+    "gen:schema": "node scripts/generate-schema.mjs",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1",
+    "picomatch": "^4.0.3",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/picomatch": "^4.0.3"
   }
 }
