@@ -1,0 +1,6 @@
+node_modules/
+dist/
+artifacts/
+venv/
+*.log
+.DS_Store
