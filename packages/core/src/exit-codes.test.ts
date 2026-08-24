@@ -41,7 +41,17 @@ describe('computeExitCode', () => {
 
 describe('exitCodeFor (CLI error registry)', () => {
   it('assigns usage errors to 2', () => {
-    for (const code of ['SCENARIO_FILE_MISSING', 'SCHEMA_INVALID', 'ARTIFACT_LOCKED'] as const) {
+    for (const code of [
+      'SCENARIO_FILE_MISSING',
+      'SCHEMA_INVALID',
+      'ARTIFACT_LOCKED',
+      'INTERACTIVE_TTY_REQUIRED',
+      'BASELINE_MISSING',
+      'BASELINE_WRITE_FAILED',
+      'VISUAL_DIFF_FAILED',
+      'MCP_SERVER_INVALID_PROJECT_ROOT',
+      'SELECTOR_SUGGESTION_UNAVAILABLE',
+    ] as const) {
       expect(exitCodeFor(code)).toBe(2);
     }
   });

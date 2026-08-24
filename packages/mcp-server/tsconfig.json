@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@stateproof-dev/core": ["../core/src/index.ts"],
+      "@stateproof-dev/app": ["../app/src/index.ts"],
+      "@getstateproof/core": ["../core/src/index.ts"],
+      "@getstateproof/app": ["../app/src/index.ts"],
+      "@stateproof/core": ["../core/src/index.ts"],
+      "@stateproof/app": ["../app/src/index.ts"]
+    }
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../app" }
+  ]
+}

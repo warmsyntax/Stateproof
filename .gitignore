@@ -9,3 +9,5 @@ venv/
 .agents/
 .aider-desk/
 skills-lock.json
+docs/
+landing-site/

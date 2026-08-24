@@ -40,4 +40,21 @@ describe('buildEnvelope', () => {
     const envelope = buildEnvelope({ type: 'init.result', exitCode: 0 });
     expect(envelope.schemaVersion).toBe(1);
   });
+
+  it('supports all defined envelope types', () => {
+    for (const type of [
+      'init.result',
+      'list.result',
+      'run.result',
+      'export.card',
+      'studio.result',
+      'mcp.tools.list',
+      'mcp.tool.result',
+      'inspect.result',
+      'error',
+    ] as const) {
+      const envelope = buildEnvelope({ type, exitCode: 0 });
+      expect(envelope.type).toBe(type);
+    }
+  });
 });

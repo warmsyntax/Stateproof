@@ -1,1 +1,10 @@
+export * from './commands/init.js';
+export * from './commands/list.js';
+export * from './commands/run.js';
+export * from './commands/studio.js';
+export * from './commands/export.js';
+export * from './reachability.js';
+export * from './reporters/human.js';
+export * from './reporters/json.js';
+export { createProgram, main } from './main.js';
 export const cliName = '@stateproof/cli';

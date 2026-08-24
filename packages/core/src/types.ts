@@ -10,8 +10,8 @@ export interface Viewport {
   name: string;
   width: number;
   height: number;
-  deviceScaleFactor?: number;
-  isMobile?: boolean;
+  deviceScaleFactor?: number | undefined;
+  isMobile?: boolean | undefined;
 }
 
 export interface RequestRule {
@@ -27,22 +27,22 @@ export interface DelayResponse {
 export interface FixtureResponse {
   mode: 'fixture';
   path: string;
-  status?: number;
-  headers?: Record<string, string>;
+  status?: number | undefined;
+  headers?: Record<string, string> | undefined;
 }
 
 export interface InlineResponse {
   mode: 'inline';
-  status?: number;
+  status?: number | undefined;
   body: unknown;
-  headers?: Record<string, string>;
+  headers?: Record<string, string> | undefined;
 }
 
 export interface ErrorResponse {
   mode: 'error';
   status: number;
-  body?: unknown;
-  headers?: Record<string, string>;
+  body?: unknown | undefined;
+  headers?: Record<string, string> | undefined;
 }
 
 export interface OfflineResponse {
@@ -58,26 +58,26 @@ export type ResponseRule =
 
 export interface ExpectRule {
   visible: string | string[];
-  timeoutMs?: number;
-  stableMs?: number;
+  timeoutMs?: number | undefined;
+  stableMs?: number | undefined;
 }
 
 export interface Scenario {
   id: string;
-  label?: string;
-  note?: string;
+  label?: string | undefined;
+  note?: string | undefined;
   request: RequestRule;
   response: ResponseRule;
   expect: ExpectRule;
 }
 
 export interface ScenarioFile {
-  $schema?: string;
-  $comment?: string;
+  $schema?: string | undefined;
+  $comment?: string | undefined;
   name: string;
   baseUrl: string;
   route: string;
-  viewports?: Viewport[];
+  viewports?: Viewport[] | undefined;
   scenarios: Scenario[];
 }
 
@@ -102,21 +102,34 @@ export const FAILURE_CODES = [
   'app-unreachable',
   'artifact-locked',
   'internal-error',
+  'visual-diff-exceeded',
   'unknown',
 ] as const;
 
 export type FailureCode = (typeof FAILURE_CODES)[number];
 
+export interface ScenarioVisualDiff {
+  baseline?: string | undefined;
+  current?: string | undefined;
+  diff?: string | undefined;
+  diffRatio?: number | undefined;
+  threshold?: number | undefined;
+}
+
 export interface ScenarioOutcome {
   id: string;
-  label?: string;
+  label?: string | undefined;
   viewport: Viewport;
   status: 'passed' | 'failed' | 'error';
-  failureCode?: FailureCode;
-  message?: string;
-  hint?: string;
+  failureCode?: FailureCode | undefined;
+  message?: string | undefined;
+  hint?: string | undefined;
+  suggestions?: {
+    selectors: string[];
+  } | undefined;
+  visualDiff?: ScenarioVisualDiff | undefined;
   artifacts: {
-    screenshot?: string;
+    screenshot?: string | undefined;
   };
   durationMs: number;
 }
@@ -132,3 +145,5 @@ export interface RunResult {
   file: string;
   scenarios: ScenarioOutcome[];
 }
+
+export type RunResultData = RunResult;

@@ -1,5 +1,5 @@
 {
-  "name": "@stateproof/cli",
+  "name": "@stateproof-dev/cli",
   "version": "0.1.0",
   "description": "Stateproof command line: init, run, list, export",
   "license": "MIT",
@@ -21,7 +21,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@stateproof/core": "workspace:*",
-    "@stateproof/playwright-runner": "workspace:*"
+    "@stateproof-dev/core": "workspace:*",
+    "@stateproof-dev/playwright-runner": "workspace:*",
+    "@stateproof-dev/reporter-html": "workspace:*",
+    "@stateproof-dev/app": "workspace:*",
+    "@clack/prompts": "^0.9.1",
+    "commander": "^13.1.0",
+    "picocolors": "^1.1.1"
   }
 }

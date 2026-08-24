@@ -5,6 +5,10 @@ export const ENVELOPE_TYPES = [
   'list.result',
   'run.result',
   'export.card',
+  'studio.result',
+  'mcp.tools.list',
+  'mcp.tool.result',
+  'inspect.result',
   'error',
 ] as const;
 

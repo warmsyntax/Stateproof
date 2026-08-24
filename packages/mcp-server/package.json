@@ -1,0 +1,28 @@
+{
+  "name": "@stateproof-dev/mcp-server",
+  "version": "0.1.0",
+  "description": "Model Context Protocol (MCP) server bridge for Stateproof frontend state validation",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "stateproof-mcp-server": "./dist/main.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "@stateproof-dev/app": "workspace:*",
+    "@stateproof-dev/core": "workspace:*"
+  }
+}

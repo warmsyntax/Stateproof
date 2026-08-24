@@ -2,8 +2,28 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@stateproof-dev/core": ["../core/src/index.ts"],
+      "@stateproof-dev/playwright-runner": ["../playwright-runner/src/index.ts"],
+      "@stateproof-dev/reporter-html": ["../reporter-html/src/index.ts"],
+      "@stateproof-dev/app": ["../app/src/index.ts"],
+      "@getstateproof/core": ["../core/src/index.ts"],
+      "@getstateproof/playwright-runner": ["../playwright-runner/src/index.ts"],
+      "@getstateproof/reporter-html": ["../reporter-html/src/index.ts"],
+      "@getstateproof/app": ["../app/src/index.ts"],
+      "@stateproof/core": ["../core/src/index.ts"],
+      "@stateproof/playwright-runner": ["../playwright-runner/src/index.ts"],
+      "@stateproof/reporter-html": ["../reporter-html/src/index.ts"],
+      "@stateproof/app": ["../app/src/index.ts"]
+    }
   },
   "include": ["src"],
-  "references": [{ "path": "../core" }, { "path": "../playwright-runner" }]
+  "references": [
+    { "path": "../core" },
+    { "path": "../playwright-runner" },
+    { "path": "../reporter-html" },
+    { "path": "../app" }
+  ]
 }

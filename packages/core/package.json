@@ -1,5 +1,5 @@
 {
-  "name": "@stateproof/core",
+  "name": "@stateproof-dev/core",
   "version": "0.1.0",
   "description": "Pure scenario schema, request matching, result model, and card rendering for Stateproof",
   "license": "MIT",

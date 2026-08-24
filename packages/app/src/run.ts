@@ -1,0 +1,164 @@
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  buildEnvelope,
+  buildJsonCard,
+  computeExitCode,
+  renderMarkdownCard,
+  StateproofError,
+  type Envelope,
+  type RunResult,
+} from '@stateproof/core';
+import { runScenarios, type RunFatal } from '@stateproof/playwright-runner';
+import { writeHtmlReport } from '@stateproof/reporter-html';
+import { checkAppReachability, verifyLoopback } from './network.js';
+import {
+  loadAndValidateScenarioFile,
+  resolveSelectedScenarios,
+  resolveSelectedViewports,
+  runSecretAudit,
+} from './scenarios.js';
+
+export interface AppRunOptions {
+  positionals?: string[] | undefined;
+  file?: string | undefined;
+  scenario?: string[] | undefined;
+  viewport?: string[] | undefined;
+  url?: string | undefined;
+  timeoutMs?: number | undefined;
+  allowRemote?: boolean | undefined;
+  allowThirdParty?: boolean | undefined;
+  strictSecrets?: boolean | undefined;
+  artifactsRoot?: string | undefined;
+  updateBaselines?: boolean | undefined;
+  diff?: boolean | undefined;
+  baselineDir?: string | undefined;
+  diffThreshold?: number | undefined;
+  skipNetworkCheck?: boolean | undefined;
+}
+
+export interface AppRunResult {
+  result: RunResult;
+  exitCode: number;
+  fatal?: RunFatal | undefined;
+  envelope: Envelope<RunResult>;
+  cardMd: string;
+  cardJson: unknown;
+  artifactDir: string;
+}
+
+export async function executeRun(options: AppRunOptions): Promise<AppRunResult> {
+  const filePath = options.file ?? 'stateproof.scenarios.json';
+  const { file, absolutePath } = loadAndValidateScenarioFile(filePath);
+
+  // 1. Resolve scenarios and viewports
+  const selectedScenarios = resolveSelectedScenarios(
+    file.scenarios,
+    file.name,
+    options.positionals,
+    options.scenario,
+  );
+
+  const selectedViewports = resolveSelectedViewports(
+    file.viewports,
+    options.viewport,
+  );
+
+  if (selectedScenarios.length === 0) {
+    throw new StateproofError({
+      code: 'NO_SCENARIOS_SELECTED',
+      message: 'No scenarios matched the provided filters.',
+      hint: 'Check scenario ids with stateproof list.',
+      file: filePath,
+    });
+  }
+
+  if (selectedViewports.length === 0) {
+    throw new StateproofError({
+      code: 'NO_VIEWPORTS_SELECTED',
+      message: 'No viewports matched the provided filters.',
+      hint: 'Check viewport names with stateproof list.',
+      file: filePath,
+    });
+  }
+
+  // 2. Secret scanning
+  runSecretAudit(selectedScenarios, absolutePath, Boolean(options.strictSecrets));
+
+  // 3. Resolve target baseUrl & guardrails
+  const effectiveBaseUrl = options.url ?? file.baseUrl;
+  if (!options.skipNetworkCheck) {
+    await verifyLoopback(effectiveBaseUrl, Boolean(options.allowRemote));
+    await checkAppReachability(effectiveBaseUrl, 10000);
+  }
+
+  // 4. Execute scenarios via runner
+  const runnerOutput = await runScenarios({
+    file,
+    scenarioFilePath: absolutePath,
+    baseUrl: effectiveBaseUrl,
+    stateproofVersion: '0.1.0',
+    allowThirdParty: options.allowThirdParty,
+    timeoutMsOverride: options.timeoutMs,
+    artifactsRoot: options.artifactsRoot,
+    updateBaselines: options.updateBaselines,
+    diff: options.diff,
+    baselineDir: options.baselineDir,
+    diffThreshold: options.diffThreshold,
+    selectedScenarioIds: selectedScenarios.map((s) => s.id),
+    selectedViewportNames: selectedViewports.map((v) => v.name),
+  });
+
+  const result = runnerOutput.result;
+  const rootDir = options.artifactsRoot ?? join(process.cwd(), 'artifacts', 'stateproof');
+  const artifactDir = join(rootDir, file.name);
+
+  // 5. Render card.md and card.json
+  const cardMd = renderMarkdownCard({ name: file.name, result });
+  const cardJson = buildJsonCard({ name: file.name, result });
+
+  writeFileSync(join(artifactDir, 'card.md'), cardMd, 'utf-8');
+  writeFileSync(join(artifactDir, 'card.json'), `${JSON.stringify(cardJson, null, 2)}\n`, 'utf-8');
+
+  // 6. Write self-contained offline HTML report directory
+  await writeHtmlReport({ result, artifactDir });
+
+  // 7. Exit code calculation
+  let exitCode: number;
+  if (runnerOutput.fatal) {
+    if (runnerOutput.fatal.kind === 'environment') {
+      exitCode = 3;
+    } else if (runnerOutput.fatal.kind === 'internal') {
+      exitCode = 4;
+    } else {
+      exitCode = 2;
+    }
+  } else {
+    exitCode = computeExitCode({ outcomes: result.scenarios });
+  }
+
+  const envelope = buildEnvelope<RunResult>({
+    type: 'run.result',
+    data: result,
+    error: runnerOutput.fatal
+      ? {
+          code: runnerOutput.fatal.code,
+          message: runnerOutput.fatal.message,
+          hint: runnerOutput.fatal.hint,
+          file: filePath,
+          runId: result.runId,
+        }
+      : null,
+    exitCode,
+  });
+
+  return {
+    result,
+    exitCode,
+    fatal: runnerOutput.fatal,
+    envelope,
+    cardMd,
+    cardJson,
+    artifactDir,
+  };
+}

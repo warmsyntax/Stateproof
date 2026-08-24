@@ -1,0 +1,23 @@
+{
+  "name": "@stateproof-dev/reporter-html",
+  "version": "0.1.0",
+  "description": "Standalone offline HTML report generator for Stateproof",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@stateproof-dev/core": "workspace:*"
+  }
+}
