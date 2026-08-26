@@ -6,10 +6,10 @@
 *Let agents and developers ship fast without breaking edge cases.*
 
 [![npm version](https://img.shields.io/npm/v/@stateproof-dev/cli.svg)](https://www.npmjs.com/package/@stateproof-dev/cli)
-[![CI Status](https://github.com/stateproof/stateproof/actions/workflows/ci.yml/badge.svg)](https://github.com/stateproof/stateproof/actions)
+[![CI Status](https://github.com/warmsyntax/Stateproof/actions/workflows/ci.yml/badge.svg)](https://github.com/warmsyntax/Stateproof/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-[Website](https://stateproof.dev) · [Documentation](docs/) · [LLM Guide](llms.txt) · [Report Bug](https://github.com/stateproof/stateproof/issues)
+[Website](https://stateproof.dev) · [Documentation](docs/) · [LLM Guide](llms.txt) · [Report Bug](https://github.com/warmsyntax/Stateproof/issues)
 
 </div>
 
