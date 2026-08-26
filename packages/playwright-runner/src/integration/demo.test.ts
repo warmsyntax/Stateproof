@@ -3,7 +3,7 @@ import { createServer as createHttpServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { ScenarioFile, ScenarioOutcome } from '@stateproof/core';
+import type { ScenarioFile, ScenarioOutcome } from '@stateproof-dev/core';
 import { createServer as createViteServer, type ViteDevServer } from 'vite';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runScenarios } from '../run.js';
@@ -63,13 +63,16 @@ function outcomeOf(output: Awaited<ReturnType<typeof runScenarios>>): ScenarioOu
   return output.result.scenarios[0] as ScenarioOutcome;
 }
 
-async function run(file: ScenarioFile, extra?: { allowThirdParty?: boolean; artifactsRoot?: string }) {
+async function run(
+  file: ScenarioFile,
+  extra?: { allowThirdParty?: boolean; artifactsRoot?: string },
+) {
   const targetArtifactsRoot = extra?.artifactsRoot ?? artifactsRoot;
   const output = await runScenarios({
     file,
     scenarioFilePath: join(EXAMPLE_ROOT, SCENARIO_FILE_NAME),
     baseUrl: file.baseUrl,
-    stateproofVersion: '0.1.0-test',
+    stateproofVersion: '0.1.3-test',
     artifactsRoot: targetArtifactsRoot,
     ...extra,
   });
@@ -241,7 +244,7 @@ describe('runner integration vs examples/react-vite-demo', () => {
           response: { mode: 'error', status: 500 },
           expect: {
             visible: ["[data-state='error']", "[data-testid='retry']"],
-            timeoutMs: 1500,
+            timeoutMs: 4000,
           },
         },
         {

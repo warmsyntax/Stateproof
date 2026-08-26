@@ -4,6 +4,7 @@ const STATUS_WORDS = {
   passed: 'PASS',
   failed: 'FAIL',
   error: 'ERROR',
+  aborted: 'ABORTED',
 } as const;
 
 export function statusWord(status: ScenarioOutcome['status']): string {
@@ -34,9 +35,11 @@ export function artifactBasename(path: string): string {
 
 export interface CardGrid {
   columns: string[];
+  hasMultipleRoutes?: boolean;
   rows: Array<{
     scenarioId: string;
     label?: string;
+    route?: string;
     cells: Record<string, ScenarioOutcome['status'] | 'missing'>;
     artifacts: string[];
   }>;
@@ -47,6 +50,12 @@ export function buildCardGrid(result: RunResult): CardGrid {
   for (const outcome of result.scenarios) {
     if (!columns.includes(outcome.viewport.name)) columns.push(outcome.viewport.name);
   }
+
+  const routes = new Set<string>();
+  for (const outcome of result.scenarios) {
+    if (outcome.route) routes.add(outcome.route);
+  }
+  const hasMultipleRoutes = routes.size > 1;
 
   const byId = new Map<string, ScenarioOutcome[]>();
   for (const outcome of result.scenarios) {
@@ -66,17 +75,22 @@ export function buildCardGrid(result: RunResult): CardGrid {
       if (outcome.artifacts.screenshot !== undefined) {
         artifacts.push(artifactBasename(outcome.artifacts.screenshot));
       }
+      if (outcome.artifacts.recoveryScreenshot !== undefined) {
+        artifacts.push(artifactBasename(outcome.artifacts.recoveryScreenshot));
+      }
     }
     const label = outcomes[0]?.label;
+    const route = outcomes[0]?.route;
     return {
       scenarioId,
       ...(label === undefined ? {} : { label }),
+      ...(route === undefined ? {} : { route }),
       cells,
       artifacts,
     };
   });
 
-  return { columns, rows };
+  return { columns, hasMultipleRoutes, rows };
 }
 
 export function renderMarkdownCard(source: CardSource): string {
@@ -86,17 +100,31 @@ export function renderMarkdownCard(source: CardSource): string {
   lines.push(`## Stateproof Card — ${headingTitle}`);
   lines.push('');
 
-  const { columns, rows } = buildCardGrid(source.result);
+  const { columns, rows, hasMultipleRoutes } = buildCardGrid(source.result);
   if (columns.length > 0 && rows.length > 0) {
-    lines.push(`| State | ${columns.join(' | ')} |`);
-    lines.push(`|---${columns.map(() => ':---:').join('|')}|`);
-    for (const row of rows) {
-      const label = escapeCell(row.label ?? row.scenarioId);
-      const cells = columns.map((column) => {
-        const cell = row.cells[column];
-        return cell === undefined || cell === 'missing' ? 'ERROR' : statusWord(cell);
-      });
-      lines.push(`| ${label} | ${cells.join(' | ')} |`);
+    if (hasMultipleRoutes) {
+      lines.push(`| Route | State | ${columns.join(' | ')} |`);
+      lines.push(`|:---|:---|${columns.map(() => ':---:').join('|')}|`);
+      for (const row of rows) {
+        const label = escapeCell(row.label ?? row.scenarioId);
+        const routeStr = escapeCell(row.route ?? '/');
+        const cells = columns.map((column) => {
+          const cell = row.cells[column];
+          return cell === undefined || cell === 'missing' ? 'ERROR' : statusWord(cell);
+        });
+        lines.push(`| \`${routeStr}\` | ${label} | ${cells.join(' | ')} |`);
+      }
+    } else {
+      lines.push(`| State | ${columns.join(' | ')} |`);
+      lines.push(`|---${columns.map(() => ':---:').join('|')}|`);
+      for (const row of rows) {
+        const label = escapeCell(row.label ?? row.scenarioId);
+        const cells = columns.map((column) => {
+          const cell = row.cells[column];
+          return cell === undefined || cell === 'missing' ? 'ERROR' : statusWord(cell);
+        });
+        lines.push(`| ${label} | ${cells.join(' | ')} |`);
+      }
     }
   }
 

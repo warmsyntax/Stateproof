@@ -1,4 +1,4 @@
-# `@stateproof/playwright-runner`
+# `@stateproof-dev/playwright-runner`
 
 > Headless browser execution engine, catch-all network interception, and viewport capture for Stateproof.
 
@@ -21,7 +21,9 @@
 ## Installation
 
 ```bash
-pnpm add @stateproof/playwright-runner
+npm install @stateproof-dev/playwright-runner
+# or
+pnpm add @stateproof-dev/playwright-runner
 ```
 
 ---
@@ -29,12 +31,12 @@ pnpm add @stateproof/playwright-runner
 ## Usage
 
 ```ts
-import { runScenarios } from '@stateproof/playwright-runner';
+import { runScenarios } from '@stateproof-dev/playwright-runner';
 
 const result = await runScenarios({
   file: scenarioFile,
   scenarioFilePath: 'stateproof.scenarios.json',
   baseUrl: 'http://localhost:5173',
-  stateproofVersion: '0.1.0',
+  stateproofVersion: '0.1.3',
 });
 ```

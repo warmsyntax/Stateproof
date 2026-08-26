@@ -1,9 +1,18 @@
 {
   "name": "@stateproof-dev/cli",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Stateproof command line: init, run, list, export",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/warmsyntax/Stateproof.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://stateproof.dev",
+  "bugs": {
+    "url": "https://github.com/warmsyntax/Stateproof/issues"
+  },
   "bin": {
     "stateproof": "./dist/main.js"
   },

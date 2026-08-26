@@ -3,6 +3,6 @@ import { cliName } from './index.js';
 
 describe('cli skeleton', () => {
   it('exposes its package name', () => {
-    expect(cliName).toBe('@stateproof/cli');
+    expect(cliName).toBe('@stateproof-dev/cli');
   });
 });

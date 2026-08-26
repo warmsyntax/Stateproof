@@ -1,7 +1,4 @@
-import {
-  executeList,
-  loadAndValidateScenarioFile,
-} from '@stateproof/app';
+import { executeList, loadAndValidateScenarioFile } from '@stateproof-dev/app';
 import { renderHumanListSummary } from '../reporters/human.js';
 import { emitJsonEnvelope } from '../reporters/json.js';
 

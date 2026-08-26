@@ -4,13 +4,13 @@ import {
   buildEnvelope,
   buildJsonCard,
   computeExitCode,
-  renderMarkdownCard,
-  StateproofError,
   type Envelope,
   type RunResult,
-} from '@stateproof/core';
-import { runScenarios, type RunFatal } from '@stateproof/playwright-runner';
-import { writeHtmlReport } from '@stateproof/reporter-html';
+  renderMarkdownCard,
+  StateproofError,
+} from '@stateproof-dev/core';
+import { type RunFatal, runScenarios } from '@stateproof-dev/playwright-runner';
+import { writeHtmlReport } from '@stateproof-dev/reporter-html';
 import { checkAppReachability, verifyLoopback } from './network.js';
 import {
   loadAndValidateScenarioFile,
@@ -26,8 +26,12 @@ export interface AppRunOptions {
   viewport?: string[] | undefined;
   url?: string | undefined;
   timeoutMs?: number | undefined;
+  failureBudgetMs?: number | undefined;
+  failFast?: boolean | undefined;
   allowRemote?: boolean | undefined;
   allowThirdParty?: boolean | undefined;
+  browserChannel?: string | undefined;
+  cdpUrl?: string | undefined;
   strictSecrets?: boolean | undefined;
   artifactsRoot?: string | undefined;
   updateBaselines?: boolean | undefined;
@@ -35,6 +39,7 @@ export interface AppRunOptions {
   baselineDir?: string | undefined;
   diffThreshold?: number | undefined;
   skipNetworkCheck?: boolean | undefined;
+  stateproofVersion?: string | undefined;
 }
 
 export interface AppRunResult {
@@ -59,10 +64,7 @@ export async function executeRun(options: AppRunOptions): Promise<AppRunResult> 
     options.scenario,
   );
 
-  const selectedViewports = resolveSelectedViewports(
-    file.viewports,
-    options.viewport,
-  );
+  const selectedViewports = resolveSelectedViewports(file.viewports, options.viewport);
 
   if (selectedScenarios.length === 0) {
     throw new StateproofError({
@@ -97,9 +99,13 @@ export async function executeRun(options: AppRunOptions): Promise<AppRunResult> 
     file,
     scenarioFilePath: absolutePath,
     baseUrl: effectiveBaseUrl,
-    stateproofVersion: '0.1.0',
+    stateproofVersion: options.stateproofVersion ?? '0.1.3',
     allowThirdParty: options.allowThirdParty,
+    browserChannel: options.browserChannel,
+    cdpUrl: options.cdpUrl,
     timeoutMsOverride: options.timeoutMs,
+    failureBudgetMs: options.failureBudgetMs,
+    failFast: options.failFast,
     artifactsRoot: options.artifactsRoot,
     updateBaselines: options.updateBaselines,
     diff: options.diff,

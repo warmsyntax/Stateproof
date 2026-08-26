@@ -1,15 +1,21 @@
 import {
+  type AppRunOptions,
   executeRun,
+  loadAndValidateScenarioFile,
   resolveSelectedScenarios,
   resolveSelectedViewports,
   runSecretAudit,
-  type AppRunOptions,
-} from '@stateproof/app';
+} from '@stateproof-dev/app';
 import pc from 'picocolors';
 import { renderHumanRunSummary } from '../reporters/human.js';
 import { emitJsonEnvelope } from '../reporters/json.js';
 
-export { resolveSelectedScenarios, resolveSelectedViewports, runSecretAudit };
+export {
+  loadAndValidateScenarioFile,
+  resolveSelectedScenarios,
+  resolveSelectedViewports,
+  runSecretAudit,
+};
 
 export interface RunCommandOptions extends AppRunOptions {
   reporter?: 'human' | 'json' | undefined;

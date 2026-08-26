@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#0D141F"/>
+  <!-- Top-Left: State 01 Loading (Blue) -->
+  <rect x="10" y="10" width="20" height="20" rx="3" fill="#1864F6"/>
+  <!-- Top-Right: State 03 Error (Vermilion / Orange-Red) -->
+  <rect x="34" y="10" width="20" height="20" rx="3" fill="#F04423"/>
+  <!-- Bottom-Left: State 02 Empty (Cyan / Teal) -->
+  <rect x="10" y="34" width="20" height="20" rx="3" fill="#00A3C4"/>
+  <!-- Bottom-Right: State 04 Verified (Lime Green) -->
+  <rect x="34" y="34" width="20" height="20" rx="3" fill="#B4DC17"/>
+</svg>

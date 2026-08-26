@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve, join } from 'node:path';
-import { StateproofError } from '@stateproof/core';
+import { dirname, join, resolve } from 'node:path';
+import { StateproofError } from '@stateproof-dev/core';
 import pc from 'picocolors';
 import { emitJsonEnvelope } from '../reporters/json.js';
 
@@ -78,7 +78,11 @@ export async function runInit(options: InitCommandOptions): Promise<number> {
 
   const url = options.url ?? 'http://localhost:5173';
   const route = options.route ?? '/';
-  const name = filePath.replace(/\.scenarios\.json$|\.json$/, '').replace(/[^a-z0-9-]/gi, '-').toLowerCase() || 'account-settings';
+  const name =
+    filePath
+      .replace(/\.scenarios\.json$|\.json$/, '')
+      .replace(/[^a-z0-9-]/gi, '-')
+      .toLowerCase() || 'account-settings';
 
   writeFileSync(targetPath, buildScaffoldJson(name, url, route), 'utf-8');
 
@@ -92,7 +96,9 @@ export async function runInit(options: InitCommandOptions): Promise<number> {
   if (existsSync(gitignorePath)) {
     const existing = readFileSync(gitignorePath, 'utf-8');
     if (!existing.includes('artifacts/') && !existing.includes('artifacts')) {
-      writeFileSync(gitignorePath, `${existing.endsWith('\n') ? '' : '\n'}${ignoreEntry}`, { flag: 'a' });
+      writeFileSync(gitignorePath, `${existing.endsWith('\n') ? '' : '\n'}${ignoreEntry}`, {
+        flag: 'a',
+      });
     }
   } else {
     writeFileSync(gitignorePath, ignoreEntry, 'utf-8');
@@ -113,9 +119,9 @@ export async function runInit(options: InitCommandOptions): Promise<number> {
   } else {
     process.stdout.write(
       `${pc.green('✔')} Initialized Stateproof scenario file at ${pc.bold(filePath)}\n` +
-      `  • Scaffolding: strict JSON with $comment and note fields\n` +
-      `  • Fixtures directory: ${pc.dim('fixtures/')}\n` +
-      `  • Updated: ${pc.dim('.gitignore (artifacts/)')}\n`,
+        `  • Scaffolding: strict JSON with $comment and note fields\n` +
+        `  • Fixtures directory: ${pc.dim('fixtures/')}\n` +
+        `  • Updated: ${pc.dim('.gitignore (artifacts/)')}\n`,
     );
   }
 

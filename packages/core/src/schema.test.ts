@@ -118,4 +118,62 @@ describe('validateScenarioShape', () => {
       expect(message).toContain('scenarios');
     }
   });
+
+  it('supports rich expectations with hidden, text, and attributes', () => {
+    const file = JSON.parse(JSON.stringify(validScenarioFile)) as ScenarioFile;
+    firstScenarioOf(file).expect = {
+      visible: "[data-state='loading']",
+      hidden: "[data-state='error']",
+      text: { '.title': 'Loading items...' },
+      attributes: { '#submit': { disabled: true, 'aria-busy': 'true' } },
+    };
+    const parsed = validateScenarioShape(file);
+    expect(parsed.scenarios[0]?.expect.hidden).toBe("[data-state='error']");
+    expect(parsed.scenarios[0]?.expect.text?.['.title']).toBe('Loading items...');
+    expect(parsed.scenarios[0]?.expect.attributes?.['#submit']?.disabled).toBe(true);
+  });
+
+  it('supports recovery loops with click actions', () => {
+    const file = JSON.parse(JSON.stringify(validScenarioFile)) as ScenarioFile;
+    firstScenarioOf(file).recovery = {
+      action: { type: 'click', selector: '[data-testid="retry"]' },
+      response: { mode: 'fixture', path: 'fixtures/products.json' },
+      expect: { visible: "[data-state='ready']", hidden: "[data-state='error']" },
+    };
+    const parsed = validateScenarioShape(file);
+    expect(parsed.scenarios[0]?.recovery?.action.type).toBe('click');
+    expect(parsed.scenarios[0]?.recovery?.action.selector).toBe('[data-testid="retry"]');
+  });
+
+  it('supports websocket connection-drop simulation', () => {
+    const file = JSON.parse(JSON.stringify(validScenarioFile)) as ScenarioFile;
+    const s = firstScenarioOf(file);
+    delete s.request;
+    delete s.response;
+    s.websocket = {
+      urlPattern: '**/ws/feed',
+      mode: 'drop-connection',
+      afterMs: 500,
+    };
+    s.expect = { visible: "[data-state='reconnecting']" };
+    const parsed = validateScenarioShape(file);
+    expect(parsed.scenarios[0]?.websocket?.mode).toBe('drop-connection');
+  });
+
+  it('supports per-scenario route override', () => {
+    const file = JSON.parse(JSON.stringify(validScenarioFile)) as ScenarioFile;
+    firstScenarioOf(file).route = '/checkout';
+    const parsed = validateScenarioShape(file);
+    expect(parsed.scenarios[0]?.route).toBe('/checkout');
+  });
+
+  it('rejects protocol-relative route at file and scenario level', () => {
+    const file = JSON.parse(JSON.stringify(validScenarioFile)) as ScenarioFile;
+    file.route = '//evil.com';
+    expect(() => validateScenarioShape(file)).toThrowError();
+
+    const file2 = JSON.parse(JSON.stringify(validScenarioFile)) as ScenarioFile;
+    firstScenarioOf(file2).route = '//evil.com';
+    expect(() => validateScenarioShape(file2)).toThrowError();
+  });
 });

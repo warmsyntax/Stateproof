@@ -45,13 +45,13 @@ importers:
 
   packages/app:
     dependencies:
-      '@stateproof/core':
+      '@stateproof-dev/core':
         specifier: workspace:*
         version: link:../core
-      '@stateproof/playwright-runner':
+      '@stateproof-dev/playwright-runner':
         specifier: workspace:*
         version: link:../playwright-runner
-      '@stateproof/reporter-html':
+      '@stateproof-dev/reporter-html':
         specifier: workspace:*
         version: link:../reporter-html
       picocolors:
@@ -63,16 +63,16 @@ importers:
       '@clack/prompts':
         specifier: ^0.9.1
         version: 0.9.1
-      '@stateproof/app':
+      '@stateproof-dev/app':
         specifier: workspace:*
         version: link:../app
-      '@stateproof/core':
+      '@stateproof-dev/core':
         specifier: workspace:*
         version: link:../core
-      '@stateproof/playwright-runner':
+      '@stateproof-dev/playwright-runner':
         specifier: workspace:*
         version: link:../playwright-runner
-      '@stateproof/reporter-html':
+      '@stateproof-dev/reporter-html':
         specifier: workspace:*
         version: link:../reporter-html
       commander:
@@ -103,16 +103,16 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.6.1
         version: 1.30.0(zod@4.4.3)
-      '@stateproof/app':
+      '@stateproof-dev/app':
         specifier: workspace:*
         version: link:../app
-      '@stateproof/core':
+      '@stateproof-dev/core':
         specifier: workspace:*
         version: link:../core
 
   packages/playwright-runner:
     dependencies:
-      '@stateproof/core':
+      '@stateproof-dev/core':
         specifier: workspace:*
         version: link:../core
       playwright:
@@ -125,7 +125,7 @@ importers:
 
   packages/reporter-html:
     dependencies:
-      '@stateproof/core':
+      '@stateproof-dev/core':
         specifier: workspace:*
         version: link:../core
 

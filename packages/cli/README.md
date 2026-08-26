@@ -1,6 +1,17 @@
-# `@stateproof/cli`
+# `@stateproof-dev/cli`
 
-> The command-line interface and AI agent driver for Stateproof.
+> The command-line interface, interactive TUI, and AI agent driver for Stateproof.
+
+---
+
+## Installation & Execution
+
+```bash
+# Run directly via npx without installation:
+npx @stateproof-dev/cli --tui
+npx @stateproof-dev/cli init --url http://localhost:5173
+npx @stateproof-dev/cli run
+```
 
 ---
 
@@ -9,25 +20,33 @@
 ### `stateproof init`
 Scaffolds a `stateproof.scenarios.json` configuration file, fixtures directory, and `.gitignore` entries:
 ```bash
-stateproof init [--file <path>] [--url <baseUrl>] [--route <path>] [--force]
+npx @stateproof-dev/cli init [--file <path>] [--url <baseUrl>] [--route <path>] [--force]
+```
+
+### `stateproof studio` / `stateproof --tui`
+Launches the interactive terminal studio (TUI) with scenario multi-selection:
+```bash
+npx @stateproof-dev/cli --tui
+# or
+npx @stateproof-dev/cli studio
 ```
 
 ### `stateproof list`
 Inspects and validates scenarios and viewports without launching a browser:
 ```bash
-stateproof list [--file <path>] [--reporter human|json]
+npx @stateproof-dev/cli list [--file <path>] [--reporter human|json]
 ```
 
 ### `stateproof run`
 Executes scenarios across viewports against a local web application:
 ```bash
-stateproof run [scenarios...] [--file <path>] [--url <baseUrl>] [--viewport <names...>] [--reporter human|json]
+npx @stateproof-dev/cli run [scenarios...] [--file <path>] [--url <baseUrl>] [--viewport <names...>] [--reporter human|json]
 ```
 
 ### `stateproof export`
 Exports Stateproof Card evidence from generated test runs:
 ```bash
-stateproof export [--run <artifactDir>] [--file <scenarioFilePath>] [--format md|json|html]
+npx @stateproof-dev/cli export [--run <artifactDir>] [--file <scenarioFilePath>] [--format md|json]
 ```
 
 ---

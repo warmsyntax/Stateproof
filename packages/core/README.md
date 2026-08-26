@@ -1,4 +1,4 @@
-# `@stateproof/core`
+# `@stateproof-dev/core`
 
 > Pure domain model, schema validation, request matching, machine envelopes, and card rendering for Stateproof.
 
@@ -18,7 +18,9 @@
 ## Installation
 
 ```bash
-pnpm add @stateproof/core
+npm install @stateproof-dev/core
+# or
+pnpm add @stateproof-dev/core
 ```
 
 ---
@@ -33,5 +35,5 @@ import {
   renderMarkdownCard,
   buildJsonCard,
   scanTextForSecrets,
-} from '@stateproof/core';
+} from '@stateproof-dev/core';
 ```

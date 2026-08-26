@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import type { RunResult } from '@stateproof/core';
+import type { RunResult } from '@stateproof-dev/core';
 import { renderHtmlReport } from './render.js';
 
 export interface WriteReportOptions {

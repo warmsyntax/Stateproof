@@ -17,14 +17,14 @@ describe('stateproof studio', () => {
     const originalIsTTY = process.stdout.isTTY;
     try {
       // Simulate non-TTY CI environment
-      (process.stdout as any).isTTY = false;
+      (process.stdout as unknown as { isTTY?: boolean }).isTTY = false;
 
       await expect(runStudio({})).rejects.toMatchObject({
         code: 'INTERACTIVE_TTY_REQUIRED',
         message: expect.stringContaining('interactive TTY'),
       });
     } finally {
-      (process.stdout as any).isTTY = originalIsTTY;
+      (process.stdout as unknown as { isTTY?: boolean }).isTTY = originalIsTTY;
     }
   });
 });

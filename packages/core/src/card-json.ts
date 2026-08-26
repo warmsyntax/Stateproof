@@ -11,7 +11,8 @@ export interface JsonCardData {
   rows: Array<{
     scenarioId: string;
     label?: string;
-    cells: Record<string, 'passed' | 'failed' | 'error'>;
+    route?: string;
+    cells: Record<string, 'passed' | 'failed' | 'error' | 'aborted'>;
   }>;
   artifacts: string[];
 }
@@ -28,6 +29,7 @@ export function buildJsonCard(source: CardSource): JsonCardData {
     rows: grid.rows.map((row) => ({
       scenarioId: row.scenarioId,
       ...(row.label === undefined ? {} : { label: row.label }),
+      ...(row.route === undefined ? {} : { route: row.route }),
       cells: Object.fromEntries(
         grid.columns.map((column) => {
           const cell = row.cells[column];

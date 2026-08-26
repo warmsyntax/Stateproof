@@ -24,12 +24,7 @@ const CANDIDATE_SELECTORS = {
     'button:has-text("Retry")',
     'button:has-text("Try again")',
   ],
-  empty: [
-    '[data-testid="empty"]',
-    '[data-state="empty"]',
-    '[role="status"]',
-    '[class*="empty"]',
-  ],
+  empty: ['[data-testid="empty"]', '[data-state="empty"]', '[role="status"]', '[class*="empty"]'],
 };
 
 export async function analyzeDomForSelectors(page: Page): Promise<SelectorSuggestionReport> {

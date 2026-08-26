@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { join } from 'node:path';
 import { deflateSync, inflateSync } from 'node:zlib';
-import type { ScenarioVisualDiff } from '@stateproof/core';
+import type { ScenarioVisualDiff } from '@stateproof-dev/core';
 
 export interface ImageData {
   width: number;
@@ -22,7 +22,7 @@ for (let n = 0; n < 256; n++) {
 function crc32(buf: Buffer, offset: number, length: number): number {
   let c = 0xffffffff;
   for (let i = 0; i < length; i++) {
-    c = CRC_TABLE[(c ^ buf[offset + i]!) & 0xff]! ^ (c >>> 8);
+    c = (CRC_TABLE[(c ^ (buf[offset + i] ?? 0)) & 0xff] ?? 0) ^ (c >>> 8);
   }
   return (c ^ 0xffffffff) >>> 0;
 }
@@ -70,8 +70,8 @@ export function decodePng(buffer: Buffer): ImageData {
     if (type === 'IHDR') {
       width = buffer.readUInt32BE(dataOffset);
       height = buffer.readUInt32BE(dataOffset + 4);
-      bitDepth = buffer[dataOffset + 8]!;
-      colorType = buffer[dataOffset + 9]!;
+      bitDepth = buffer[dataOffset + 8] ?? 8;
+      colorType = buffer[dataOffset + 9] ?? 6;
     } else if (type === 'IDAT') {
       idatChunks.push(buffer.subarray(dataOffset, dataEnd));
     } else if (type === 'IEND') {
@@ -101,9 +101,9 @@ export function decodePng(buffer: Buffer): ImageData {
   const currRow = new Uint8Array(stride);
 
   for (let y = 0; y < height; y++) {
-    const filterType = decompressed[srcPos++]!;
+    const filterType = decompressed[srcPos++] ?? 0;
     for (let i = 0; i < stride; i++) {
-      currRow[i] = decompressed[srcPos++]!;
+      currRow[i] = decompressed[srcPos++] ?? 0;
     }
 
     // Apply inverse filtering
@@ -112,27 +112,27 @@ export function decodePng(buffer: Buffer): ImageData {
         break;
       case 1: // Sub
         for (let x = bytesPerPixel; x < stride; x++) {
-          currRow[x] = (currRow[x]! + currRow[x - bytesPerPixel]!) & 0xff;
+          currRow[x] = ((currRow[x] ?? 0) + (currRow[x - bytesPerPixel] ?? 0)) & 0xff;
         }
         break;
       case 2: // Up
         for (let x = 0; x < stride; x++) {
-          currRow[x] = (currRow[x]! + prevRow[x]!) & 0xff;
+          currRow[x] = ((currRow[x] ?? 0) + (prevRow[x] ?? 0)) & 0xff;
         }
         break;
       case 3: // Average
         for (let x = 0; x < stride; x++) {
-          const left = x >= bytesPerPixel ? currRow[x - bytesPerPixel]! : 0;
-          const up = prevRow[x]!;
-          currRow[x] = (currRow[x]! + Math.floor((left + up) / 2)) & 0xff;
+          const left = x >= bytesPerPixel ? (currRow[x - bytesPerPixel] ?? 0) : 0;
+          const up = prevRow[x] ?? 0;
+          currRow[x] = ((currRow[x] ?? 0) + Math.floor((left + up) / 2)) & 0xff;
         }
         break;
       case 4: // Paeth
         for (let x = 0; x < stride; x++) {
-          const left = x >= bytesPerPixel ? currRow[x - bytesPerPixel]! : 0;
-          const up = prevRow[x]!;
-          const upLeft = x >= bytesPerPixel ? prevRow[x - bytesPerPixel]! : 0;
-          currRow[x] = (currRow[x]! + paethPredictor(left, up, upLeft)) & 0xff;
+          const left = x >= bytesPerPixel ? (currRow[x - bytesPerPixel] ?? 0) : 0;
+          const up = prevRow[x] ?? 0;
+          const upLeft = x >= bytesPerPixel ? (prevRow[x - bytesPerPixel] ?? 0) : 0;
+          currRow[x] = ((currRow[x] ?? 0) + paethPredictor(left, up, upLeft)) & 0xff;
         }
         break;
       default:
@@ -146,17 +146,17 @@ export function decodePng(buffer: Buffer): ImageData {
       const srcIndex = x * bytesPerPixel;
 
       if (colorType === 6) {
-        rawRgba[destIndex] = currRow[srcIndex]!;
-        rawRgba[destIndex + 1] = currRow[srcIndex + 1]!;
-        rawRgba[destIndex + 2] = currRow[srcIndex + 2]!;
-        rawRgba[destIndex + 3] = currRow[srcIndex + 3]!;
+        rawRgba[destIndex] = currRow[srcIndex] ?? 0;
+        rawRgba[destIndex + 1] = currRow[srcIndex + 1] ?? 0;
+        rawRgba[destIndex + 2] = currRow[srcIndex + 2] ?? 0;
+        rawRgba[destIndex + 3] = currRow[srcIndex + 3] ?? 0;
       } else if (colorType === 2) {
-        rawRgba[destIndex] = currRow[srcIndex]!;
-        rawRgba[destIndex + 1] = currRow[srcIndex + 1]!;
-        rawRgba[destIndex + 2] = currRow[srcIndex + 2]!;
+        rawRgba[destIndex] = currRow[srcIndex] ?? 0;
+        rawRgba[destIndex + 1] = currRow[srcIndex + 1] ?? 0;
+        rawRgba[destIndex + 2] = currRow[srcIndex + 2] ?? 0;
         rawRgba[destIndex + 3] = 255;
       } else if (colorType === 0) {
-        const v = currRow[srcIndex]!;
+        const v = currRow[srcIndex] ?? 0;
         rawRgba[destIndex] = v;
         rawRgba[destIndex + 1] = v;
         rawRgba[destIndex + 2] = v;
@@ -180,7 +180,7 @@ export function encodePng(img: ImageData): Buffer {
     uncompressed[destPos++] = 0; // Filter: None
     const srcRowOffset = y * stride;
     for (let x = 0; x < stride; x++) {
-      uncompressed[destPos++] = data[srcRowOffset + x]!;
+      uncompressed[destPos++] = data[srcRowOffset + x] ?? 0;
     }
   }
 
@@ -263,15 +263,15 @@ export function compareImages(
       const idx1 = (y * img1.width + x) * 4;
       const idx2 = (y * img2.width + x) * 4;
 
-      const r1 = img1.data[idx1]!;
-      const g1 = img1.data[idx1 + 1]!;
-      const b1 = img1.data[idx1 + 2]!;
-      const a1 = img1.data[idx1 + 3]!;
+      const r1 = img1.data[idx1] ?? 0;
+      const g1 = img1.data[idx1 + 1] ?? 0;
+      const b1 = img1.data[idx1 + 2] ?? 0;
+      const a1 = img1.data[idx1 + 3] ?? 0;
 
-      const r2 = img2.data[idx2]!;
-      const g2 = img2.data[idx2 + 1]!;
-      const b2 = img2.data[idx2 + 2]!;
-      const a2 = img2.data[idx2 + 3]!;
+      const r2 = img2.data[idx2] ?? 0;
+      const g2 = img2.data[idx2 + 1] ?? 0;
+      const b2 = img2.data[idx2 + 2] ?? 0;
+      const a2 = img2.data[idx2 + 3] ?? 0;
 
       const dr = Math.abs(r1 - r2);
       const dg = Math.abs(g1 - g2);

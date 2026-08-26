@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { ScenarioFile } from '@stateproof-dev/core';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   executeExport,
@@ -26,7 +27,7 @@ afterEach(() => {
   }
 });
 
-const sampleScenarioFile = {
+const sampleScenarioFile: ScenarioFile = {
   $schema: 'https://stateproof.dev/schema/v1.json',
   name: 'account-settings',
   baseUrl: 'http://localhost:5173',
@@ -53,7 +54,7 @@ const sampleScenarioFile = {
   ],
 };
 
-describe('@stateproof/app', () => {
+describe('@stateproof-dev/app', () => {
   describe('executeList', () => {
     it('parses, validates, and returns list data and envelope', async () => {
       const dir = makeTempDir();
@@ -69,19 +70,21 @@ describe('@stateproof/app', () => {
   });
 
   describe('resolveSelectedScenarios & viewports', () => {
-    it('resolves all scenarios when no filters provided', () => {
-      const selected = resolveSelectedScenarios(sampleScenarioFile.scenarios as any, 'account-settings');
+    it('resolves all scenarios when no filter provided', () => {
+      const selected = resolveSelectedScenarios(sampleScenarioFile.scenarios, 'account-settings');
       expect(selected).toHaveLength(2);
     });
 
     it('resolves specific scenario id', () => {
-      const selected = resolveSelectedScenarios(sampleScenarioFile.scenarios as any, 'account-settings', ['account-error']);
+      const selected = resolveSelectedScenarios(sampleScenarioFile.scenarios, 'account-settings', [
+        'account-error',
+      ]);
       expect(selected).toHaveLength(1);
       expect(selected[0]?.id).toBe('account-error');
     });
 
     it('resolves viewports', () => {
-      const selected = resolveSelectedViewports(sampleScenarioFile.viewports as any, ['mobile']);
+      const selected = resolveSelectedViewports(sampleScenarioFile.viewports, ['mobile']);
       expect(selected).toHaveLength(1);
       expect(selected[0]?.name).toBe('mobile');
     });
@@ -93,13 +96,14 @@ describe('@stateproof/app', () => {
       const artifactDir = join(dir, 'account-settings');
       mkdirSync(artifactDir, { recursive: true });
 
-      const cardMdContent = '## Stateproof Card\n| State | desktop |\n|---|:---:|\n| Error | FAIL |';
+      const cardMdContent =
+        '## Stateproof Card\n| State | desktop |\n|---|:---:|\n| Error | FAIL |';
       writeFileSync(join(artifactDir, 'card.md'), cardMdContent, 'utf-8');
 
       const runJsonContent = {
         schemaVersion: 1,
         runId: 'test-run-123',
-        stateproofVersion: '0.1.0',
+        stateproofVersion: '0.1.3',
         browserVersion: '141',
         startedAt: '2026-08-24T10:00:00Z',
         finishedAt: '2026-08-24T10:00:05Z',
@@ -119,7 +123,11 @@ describe('@stateproof/app', () => {
           },
         ],
       };
-      writeFileSync(join(artifactDir, 'run.json'), JSON.stringify(runJsonContent, null, 2), 'utf-8');
+      writeFileSync(
+        join(artifactDir, 'run.json'),
+        JSON.stringify(runJsonContent, null, 2),
+        'utf-8',
+      );
 
       // Test export
       const exportResult = await executeExport({ run: artifactDir, format: 'md' });

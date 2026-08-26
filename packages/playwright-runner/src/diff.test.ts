@@ -1,16 +1,17 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import {
-  compareImages,
-  decodePng,
-  encodePng,
-  type ImageData,
-  runVisualDiff,
-} from './diff.js';
+import { compareImages, decodePng, encodePng, type ImageData, runVisualDiff } from './diff.js';
 
-function createSolidImage(width: number, height: number, r: number, g: number, b: number, a = 255): ImageData {
+function createSolidImage(
+  width: number,
+  height: number,
+  r: number,
+  g: number,
+  b: number,
+  a = 255,
+): ImageData {
   const data = new Uint8Array(width * height * 4);
   for (let i = 0; i < width * height; i++) {
     const idx = i * 4;
@@ -108,7 +109,11 @@ describe('runVisualDiff', () => {
     });
 
     expect(result.status).toBe('passed');
-    const expectedBaselineFile = join(baselineDir, 'account-settings', 'account-loading.desktop.png');
+    const expectedBaselineFile = join(
+      baselineDir,
+      'account-settings',
+      'account-loading.desktop.png',
+    );
     expect(existsSync(expectedBaselineFile)).toBe(true);
   });
 

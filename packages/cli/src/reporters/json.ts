@@ -1,4 +1,9 @@
-import { buildEnvelope, type Envelope, type EnvelopeError, type EnvelopeType } from '@stateproof/core';
+import {
+  buildEnvelope,
+  type Envelope,
+  type EnvelopeError,
+  type EnvelopeType,
+} from '@stateproof-dev/core';
 
 export function emitJsonEnvelope<T>(
   input:

@@ -52,20 +52,66 @@ const responseSchema = z.discriminatedUnion('mode', [
   }),
 ]);
 
-const expectSchema = z.strictObject({
-  visible: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]),
-  timeoutMs: z.number().int().positive().optional(),
-  stableMs: z.number().int().min(0).optional(),
+const expectSchema = z
+  .strictObject({
+    visible: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]).optional(),
+    hidden: z.union([z.string().min(1), z.array(z.string().min(1)).min(1)]).optional(),
+    text: z.record(z.string(), z.string()).optional(),
+    attributes: z
+      .record(z.string(), z.record(z.string(), z.union([z.string(), z.boolean()])))
+      .optional(),
+    timeoutMs: z.number().int().positive().optional(),
+    stableMs: z.number().int().min(0).optional(),
+  })
+  .refine(
+    (data) =>
+      data.visible !== undefined ||
+      data.hidden !== undefined ||
+      data.text !== undefined ||
+      data.attributes !== undefined,
+    'expect must specify at least one assertion rule (visible, hidden, text, or attributes)',
+  );
+
+const recoveryActionSchema = z.strictObject({
+  type: z.literal('click'),
+  selector: z.string().min(1),
 });
 
-const scenarioSchema = z.strictObject({
-  id: kebab,
-  label: z.string().min(1).optional(),
-  note: z.string().min(1).optional(),
-  request: requestSchema,
+const recoverySchema = z.strictObject({
+  action: recoveryActionSchema,
   response: responseSchema,
   expect: expectSchema,
 });
+
+const webSocketSchema = z.strictObject({
+  urlPattern: z.string().min(1),
+  mode: z.enum(['drop-connection', 'close']),
+  afterMs: z.number().int().min(0).optional(),
+});
+
+const scenarioSchema = z
+  .strictObject({
+    id: kebab,
+    label: z.string().min(1).optional(),
+    note: z.string().min(1).optional(),
+    route: z
+      .string()
+      .refine(
+        (value) => value.startsWith('/') && !value.startsWith('//'),
+        "route must start with a single '/' and cannot be protocol-relative",
+      )
+      .optional(),
+    request: requestSchema.optional(),
+    response: responseSchema.optional(),
+    websocket: webSocketSchema.optional(),
+    expect: expectSchema,
+    recovery: recoverySchema.optional(),
+  })
+  .refine(
+    (data) =>
+      (data.request !== undefined && data.response !== undefined) || data.websocket !== undefined,
+    'scenario must specify either (request and response) for HTTP interception or (websocket) for WebSocket simulation',
+  );
 
 export const scenarioFileSchema = z.strictObject({
   $schema: z.string().optional(),
@@ -79,7 +125,12 @@ export const scenarioFileSchema = z.strictObject({
       return false;
     }
   }, 'baseUrl must be an absolute http:// or https:// URL'),
-  route: z.string().refine((value) => value.startsWith('/'), "route must start with '/'"),
+  route: z
+    .string()
+    .refine(
+      (value) => value.startsWith('/') && !value.startsWith('//'),
+      "route must start with a single '/' and cannot be protocol-relative",
+    ),
   viewports: z.array(viewportSchema).min(1).optional(),
   scenarios: z.array(scenarioSchema).min(1),
 });

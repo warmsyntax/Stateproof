@@ -4,7 +4,7 @@ import {
   type Envelope,
   type ScenarioFile,
   type Viewport,
-} from '@stateproof/core';
+} from '@stateproof-dev/core';
 import { loadAndValidateScenarioFile } from './scenarios.js';
 
 export interface ListResultData {
@@ -17,10 +17,10 @@ export interface ListResultData {
     id: string;
     label?: string | undefined;
     note?: string | undefined;
-    method: string;
-    urlPattern: string;
-    mode: string;
-    visible: string | string[];
+    method?: string | undefined;
+    urlPattern?: string | undefined;
+    mode?: string | undefined;
+    visible?: string | string[] | undefined;
     timeoutMs: number;
     stableMs: number;
   }>;
@@ -51,9 +51,9 @@ export async function executeList(options: AppListOptions = {}): Promise<AppList
       id: s.id,
       label: s.label,
       note: s.note,
-      method: s.request.method,
-      urlPattern: s.request.urlPattern,
-      mode: s.response.mode,
+      method: s.request?.method ?? (s.websocket ? 'WS' : undefined),
+      urlPattern: s.request?.urlPattern ?? s.websocket?.urlPattern ?? undefined,
+      mode: s.response?.mode ?? (s.websocket ? s.websocket.mode : undefined),
       visible: s.expect.visible,
       timeoutMs: s.expect.timeoutMs ?? 15000,
       stableMs: s.expect.stableMs ?? 0,

@@ -3,4 +3,4 @@ export {
   isLoopbackIp,
   LOOPBACK_HOSTS,
   verifyLoopback,
-} from '@stateproof/app';
+} from '@stateproof-dev/app';

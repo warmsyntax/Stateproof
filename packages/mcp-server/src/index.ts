@@ -1,4 +1,4 @@
 export {
-  createStateproofMcpServer,
   type CreateMcpServerOptions,
+  createStateproofMcpServer,
 } from './server.js';

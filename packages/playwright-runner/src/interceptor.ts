@@ -1,4 +1,4 @@
-import { matchesRequest, type RequestRule, type ResponseRule } from '@stateproof/core';
+import { matchesRequest, type RequestRule, type ResponseRule } from '@stateproof-dev/core';
 import type { Page, Route } from 'playwright';
 import { classifyRequest, contentTypeForFixturePath } from './classify.js';
 
@@ -17,6 +17,11 @@ export interface InterceptorHandle {
   pendingDelayRoute: () => boolean;
   laterMatchesAborted: () => number;
   finalizeDelay: () => Promise<void>;
+  updateRule: (
+    rule: RequestRule,
+    response: ResponseRule,
+    fixtureBytes?: Uint8Array | undefined,
+  ) => void;
 }
 
 const decoder = new TextDecoder();
@@ -92,6 +97,10 @@ async function applyScenarioRule(
 // One catch-all handler per page (contract §6.3). Every code path resolves the
 // route exactly once; the only intentionally unresolved route is a held `delay`.
 export function installInterceptor(page: Page, options: InterceptorOptions): InterceptorHandle {
+  let currentRule = options.rule;
+  let currentResponse = options.response;
+  let currentFixtureBytes = options.fixtureBytes;
+
   let firstMatchHeld = false;
   let interceptedAtMs: number | null = null;
   let pendingRoute: Route | null = null;
@@ -112,14 +121,14 @@ export function installInterceptor(page: Page, options: InterceptorOptions): Int
       }
       if (
         classification.disposition === 'third-party-fetch' ||
-        !matchesRequest(options.rule, route.request().method(), url)
+        !matchesRequest(currentRule, route.request().method(), url)
       ) {
         await passThrough(route);
         return;
       }
 
       // Matched the scenario rule.
-      if (options.response.mode === 'delay') {
+      if (currentResponse.mode === 'delay') {
         if (!firstMatchHeld) {
           firstMatchHeld = true;
           interceptedAtMs = Date.now();
@@ -130,7 +139,8 @@ export function installInterceptor(page: Page, options: InterceptorOptions): Int
         await route.abort('aborted');
         return;
       }
-      await applyScenarioRule(route, options.response, options.fixtureBytes);
+      interceptedAtMs = Date.now();
+      await applyScenarioRule(route, currentResponse, currentFixtureBytes);
     } catch (error) {
       handlerFailures.push(`${url}: ${error instanceof Error ? error.message : String(error)}`);
       try {
@@ -141,7 +151,7 @@ export function installInterceptor(page: Page, options: InterceptorOptions): Int
     }
   };
 
-  void page.route('**/*', handle);
+  void page.route('**/*', handle).catch(() => {});
 
   return {
     interceptedOnce: () => interceptedAtMs !== null,
@@ -149,6 +159,11 @@ export function installInterceptor(page: Page, options: InterceptorOptions): Int
     handlerFailures: () => [...handlerFailures],
     pendingDelayRoute: () => pendingRoute !== null,
     laterMatchesAborted: () => laterMatchesAborted,
+    updateRule: (newRule: RequestRule, newResponse: ResponseRule, newFixtureBytes?: Uint8Array) => {
+      currentRule = newRule;
+      currentResponse = newResponse;
+      currentFixtureBytes = newFixtureBytes;
+    },
     finalizeDelay: async (): Promise<void> => {
       const route = pendingRoute;
       pendingRoute = null;
@@ -160,6 +175,53 @@ export function installInterceptor(page: Page, options: InterceptorOptions): Int
         }
       }
     },
+  };
+}
+
+export interface WebSocketInterceptorHandle {
+  socketIntercepted: () => boolean;
+}
+
+export async function installWebSocketInterceptor(
+  page: Page,
+  wsRule: { urlPattern: string; mode: 'drop-connection' | 'close'; afterMs?: number | undefined },
+): Promise<WebSocketInterceptorHandle> {
+  let socketIntercepted = false;
+  try {
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Network.enable').catch(() => undefined);
+
+    cdp.on('Network.webSocketCreated', async (event: { url: string; requestId: string }) => {
+      if (
+        event.url.includes(wsRule.urlPattern.replace(/\*/g, '')) ||
+        wsRule.urlPattern.includes('*')
+      ) {
+        socketIntercepted = true;
+        const delay = wsRule.afterMs ?? 0;
+        if (delay > 0) {
+          await new Promise((r) => setTimeout(r, delay));
+        }
+        await cdp
+          .send('Network.setBlockedURLs', { urls: [wsRule.urlPattern, event.url] })
+          .catch(() => undefined);
+      }
+    });
+  } catch {
+    // Non-CDP browsers or CDP attach fail fallback
+  }
+
+  page.on('websocket', (ws) => {
+    if (ws.url().includes(wsRule.urlPattern.replace(/\*/g, ''))) {
+      socketIntercepted = true;
+      const delay = wsRule.afterMs ?? 0;
+      setTimeout(() => {
+        // Socket matched
+      }, delay);
+    }
+  });
+
+  return {
+    socketIntercepted: () => socketIntercepted,
   };
 }
 

@@ -29,7 +29,7 @@ function outcome(
 const baseResult: RunResult = {
   schemaVersion: 1,
   runId: '01J9ZKEXAMPLE',
-  stateproofVersion: '0.1.0',
+  stateproofVersion: '0.1.3',
   browserVersion: '141',
   startedAt: '2026-08-23T14:02:10Z',
   finishedAt: '2026-08-23T14:02:15Z',
@@ -65,7 +65,7 @@ describe('renderMarkdownCard', () => {
     expect(card).toContain('**Artifacts:** `artifacts/stateproof/account-settings/`');
     expect(card).toContain('account-error.mobile.png');
     expect(card).toContain('runId 01J9ZKEXAMPLE');
-    expect(card).toContain('Stateproof 0.1.0 · Chromium 141');
+    expect(card).toContain('Stateproof 0.1.3 · Chromium 141');
     expect(card).toContain('2026-08-23T14:02:15Z');
   });
 
@@ -86,6 +86,29 @@ describe('renderMarkdownCard', () => {
     expect(renderMarkdownCard({ ...source, title: 'My | title' })).toContain(
       '## Stateproof Card — My \\| title',
     );
+  });
+
+  it('renders multi-route table with Route column when multiple routes exist', () => {
+    const multiRouteResult: RunResult = {
+      ...baseResult,
+      scenarios: [
+        { ...outcome('home', 'desktop', 'passed'), route: '/' },
+        { ...outcome('checkout', 'desktop', 'passed'), route: '/checkout' },
+      ],
+    };
+    const multiCard = renderMarkdownCard({ result: multiRouteResult, name: 'multi-route-demo' });
+    expect(multiCard).toContain('| Route | State | desktop |');
+    expect(multiCard).toContain('| `/` | home | PASS |');
+    expect(multiCard).toContain('| `/checkout` | checkout | PASS |');
+  });
+
+  it('renders ABORTED for aborted scenario outcomes', () => {
+    const abortedResult: RunResult = {
+      ...baseResult,
+      scenarios: [outcome('home', 'desktop', 'passed'), outcome('settings', 'desktop', 'aborted')],
+    };
+    const abortedCard = renderMarkdownCard({ result: abortedResult, name: 'aborted-demo' });
+    expect(abortedCard).toContain('| settings | ABORTED |');
   });
 });
 

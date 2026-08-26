@@ -1,15 +1,8 @@
 import { resolve } from 'node:path';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
-import {
-  executeList,
-  executeRun,
-  inspectFailure,
-} from '@stateproof/app';
-import { StateproofError } from '@stateproof/core';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { executeList, executeRun, inspectFailure } from '@stateproof-dev/app';
+import { StateproofError } from '@stateproof-dev/core';
 
 export interface CreateMcpServerOptions {
   name?: string | undefined;
@@ -20,7 +13,7 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
   const server = new Server(
     {
       name: options.name ?? 'stateproof',
-      version: options.version ?? '0.1.0',
+      version: options.version ?? '0.1.3',
     },
     {
       capabilities: {
@@ -75,6 +68,14 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
               url: {
                 type: 'string',
                 description: 'Override target application baseUrl',
+              },
+              browserChannel: {
+                type: 'string',
+                description: 'Browser channel to launch (e.g. "chrome", "msedge", "chromium")',
+              },
+              cdpUrl: {
+                type: 'string',
+                description: 'Remote browser CDP WebSocket endpoint (e.g. "ws://localhost:9222")',
               },
               timeoutMs: {
                 type: 'number',
@@ -145,11 +146,13 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
   // Call tool handler
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
-    const projectRoot = typeof args.projectRoot === 'string' ? resolve(args.projectRoot) : process.cwd();
+    const projectRoot =
+      typeof args.projectRoot === 'string' ? resolve(args.projectRoot) : process.cwd();
 
     try {
       if (name === 'stateproof_list_scenarios') {
-        const fileCandidate = typeof args.file === 'string' ? args.file : 'stateproof.scenarios.json';
+        const fileCandidate =
+          typeof args.file === 'string' ? args.file : 'stateproof.scenarios.json';
         const filePath = resolve(projectRoot, fileCandidate);
 
         const listResult = await executeList({ file: filePath });
@@ -164,7 +167,8 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
       }
 
       if (name === 'stateproof_run_validation') {
-        const fileCandidate = typeof args.file === 'string' ? args.file : 'stateproof.scenarios.json';
+        const fileCandidate =
+          typeof args.file === 'string' ? args.file : 'stateproof.scenarios.json';
         const filePath = resolve(projectRoot, fileCandidate);
 
         const runResult = await executeRun({
@@ -172,6 +176,8 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
           scenario: Array.isArray(args.scenario) ? (args.scenario as string[]) : undefined,
           viewport: Array.isArray(args.viewport) ? (args.viewport as string[]) : undefined,
           url: typeof args.url === 'string' ? args.url : undefined,
+          browserChannel: typeof args.browserChannel === 'string' ? args.browserChannel : undefined,
+          cdpUrl: typeof args.cdpUrl === 'string' ? args.cdpUrl : undefined,
           timeoutMs: typeof args.timeoutMs === 'number' ? args.timeoutMs : undefined,
           diff: Boolean(args.diff),
           updateBaselines: Boolean(args.updateBaselines),
@@ -228,18 +234,19 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
         ],
       };
     } catch (error) {
-      const err = error instanceof StateproofError
-        ? {
-            code: error.code,
-            message: error.message,
-            hint: error.hint,
-            file: error.file,
-          }
-        : {
-            code: 'INTERNAL_ERROR',
-            message: error instanceof Error ? error.message : String(error),
-            hint: 'Check server logs.',
-          };
+      const err =
+        error instanceof StateproofError
+          ? {
+              code: error.code,
+              message: error.message,
+              hint: error.hint,
+              file: error.file,
+            }
+          : {
+              code: 'INTERNAL_ERROR',
+              message: error instanceof Error ? error.message : String(error),
+              hint: 'Check server logs.',
+            };
 
       return {
         isError: true,

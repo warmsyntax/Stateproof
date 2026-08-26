@@ -1,6 +1,6 @@
 #!/usr/bin/env node
+import { exitCodeFor, StateproofError } from '@stateproof-dev/core';
 import { Command } from 'commander';
-import { exitCodeFor, StateproofError } from '@stateproof/core';
 import pc from 'picocolors';
 import { runExport } from './commands/export.js';
 import { runInit } from './commands/init.js';
@@ -9,7 +9,7 @@ import { runRun } from './commands/run.js';
 import { runStudio } from './commands/studio.js';
 import { emitJsonEnvelope } from './reporters/json.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.1.3';
 
 export function createProgram(): Command {
   const program = new Command();
@@ -42,15 +42,13 @@ export function createProgram(): Command {
       process.exit(exitCode);
     });
 
-  program
-    .option('--tui', 'Launch interactive terminal studio (TUI)')
-    .action(async (options) => {
-      if (options.tui) {
-        const exitCode = await runStudio(options);
-        process.exit(exitCode);
-      }
-      program.help();
-    });
+  program.option('--tui', 'Launch interactive terminal studio (TUI)').action(async (options) => {
+    if (options.tui) {
+      const exitCode = await runStudio(options);
+      process.exit(exitCode);
+    }
+    program.help();
+  });
 
   program
     .command('run')
@@ -61,13 +59,34 @@ export function createProgram(): Command {
     .option('--viewport <names...>', 'Specific viewport names to run')
     .option('--url <baseUrl>', 'Override baseUrl')
     .option('--timeout-ms <number>', 'Override per-scenario timeout', (v) => parseInt(v, 10))
+    .option(
+      '--browser-channel <name>',
+      'Browser channel (chrome, msedge, chromium)',
+      process.env.STATEPROOF_BROWSER_CHANNEL,
+    )
+    .option(
+      '--cdp-url <url>',
+      'Remote browser CDP WebSocket endpoint',
+      process.env.STATEPROOF_CDP_URL,
+    )
     .option('--allow-remote', 'Permit execution against non-loopback URLs')
     .option('--allow-third-party', 'Permit third-party network requests')
     .option('--strict-secrets', 'Treat secret detection warnings as fatal errors')
     .option('--diff', 'Enable visual diffing against baselines')
     .option('--update-baselines', 'Update visual baselines with current captures')
-    .option('--baseline-dir <path>', 'Directory storing visual baselines (default: stateproof/baselines)')
-    .option('--diff-threshold <number>', 'Maximum allowed diff pixel ratio (default: 0.001)', (v) => parseFloat(v))
+    .option(
+      '--baseline-dir <path>',
+      'Directory storing visual baselines (default: stateproof/baselines)',
+    )
+    .option('--diff-threshold <number>', 'Maximum allowed diff pixel ratio (default: 0.001)', (v) =>
+      parseFloat(v),
+    )
+    .option('--fail-fast', 'Stop execution on the first scenario failure')
+    .option(
+      '--failure-budget-ms <number>',
+      'Override timeout for failing checks in milliseconds',
+      (v) => parseInt(v, 10),
+    )
     .option('--reporter <type>', 'Output format (human|json)', 'human')
     .option('--tui', 'Launch interactive terminal studio (TUI)')
     .action(async (positionals, options) => {
@@ -89,8 +108,13 @@ export function createProgram(): Command {
     .option('--allow-third-party', 'Permit third-party network requests')
     .option('--strict-secrets', 'Treat secret detection warnings as fatal errors')
     .option('--headed', 'Run browser in headed mode')
-    .option('--baseline-dir <path>', 'Directory storing visual baselines (default: stateproof/baselines)')
-    .option('--diff-threshold <number>', 'Maximum allowed diff pixel ratio (default: 0.001)', (v) => parseFloat(v))
+    .option(
+      '--baseline-dir <path>',
+      'Directory storing visual baselines (default: stateproof/baselines)',
+    )
+    .option('--diff-threshold <number>', 'Maximum allowed diff pixel ratio (default: 0.001)', (v) =>
+      parseFloat(v),
+    )
     .action(async (options) => {
       const exitCode = await runStudio(options);
       process.exit(exitCode);
@@ -111,16 +135,24 @@ export function createProgram(): Command {
 }
 
 export async function main(argv: string[] = process.argv): Promise<void> {
-  const isJson = argv.includes('--reporter') && argv[argv.indexOf('--reporter') + 1] === 'json' ||
-                 argv.some((a) => a.startsWith('--reporter=json')) ||
-                 (argv.includes('export') && (argv.includes('--format=json') || (argv.includes('--format') && argv[argv.indexOf('--format') + 1] === 'json')));
+  const isJson =
+    (argv.includes('--reporter') && argv[argv.indexOf('--reporter') + 1] === 'json') ||
+    argv.some((a) => a.startsWith('--reporter=json')) ||
+    (argv.includes('export') &&
+      (argv.includes('--format=json') ||
+        (argv.includes('--format') && argv[argv.indexOf('--format') + 1] === 'json')));
 
   try {
     const program = createProgram();
     program.exitOverride();
     await program.parseAsync(argv);
   } catch (error) {
-    if (error && typeof error === 'object' && 'exitCode' in error && typeof (error as { exitCode: number }).exitCode === 'number') {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'exitCode' in error &&
+      typeof (error as { exitCode: number }).exitCode === 'number'
+    ) {
       const code = (error as { exitCode: number }).exitCode;
       if (code === 0) process.exit(0);
     }
@@ -143,7 +175,7 @@ export async function main(argv: string[] = process.argv): Promise<void> {
       } else {
         process.stderr.write(
           `${pc.red(pc.bold(`Error [${error.code}]`))}: ${error.message}\n` +
-          `  ${pc.cyan('hint:')} ${error.hint}\n`,
+            `  ${pc.cyan('hint:')} ${error.hint}\n`,
         );
       }
       process.exit(exitCode);
@@ -163,14 +195,16 @@ export async function main(argv: string[] = process.argv): Promise<void> {
         exitCode: 4,
       });
     } else {
-      process.stderr.write(
-        `${pc.red(pc.bold('Unexpected Error'))}: ${message}\n`,
-      );
+      process.stderr.write(`${pc.red(pc.bold('Unexpected Error'))}: ${message}\n`);
     }
     process.exit(4);
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('main.js') || process.argv[1]?.endsWith('stateproof')) {
+if (
+  import.meta.url === `file://${process.argv[1]}` ||
+  process.argv[1]?.endsWith('main.js') ||
+  process.argv[1]?.endsWith('stateproof')
+) {
   void main();
 }

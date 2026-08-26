@@ -1,8 +1,8 @@
-export * from './artifacts.js';
 export {
   analyzeDomForSelectors,
   type SelectorSuggestionReport,
 } from './analyzer.js';
+export * from './artifacts.js';
 export {
   classifyRequest,
   contentTypeForFixturePath,
@@ -10,18 +10,20 @@ export {
 } from './classify.js';
 export {
   compareImages,
+  type DiffResult,
   decodePng,
   encodePng,
-  runVisualDiff,
-  type DiffResult,
   type ImageData,
   type RunVisualDiffOptions,
+  runVisualDiff,
   type VisualDiffExecutionResult,
 } from './diff.js';
 export {
   type InterceptorHandle,
   type InterceptorOptions,
   installInterceptor,
+  installWebSocketInterceptor,
+  type WebSocketInterceptorHandle,
 } from './interceptor.js';
 export {
   type RunFatal,
@@ -31,10 +33,16 @@ export {
   runScenarios,
 } from './run.js';
 export {
+  AttributeMismatchError,
+  ElementNotHiddenError,
   SelectorTimeoutError,
   SelectorUnstableError,
   scrollFirstIntoView,
   sleep,
+  TextMismatchError,
+  verifyAttributes,
+  verifyText,
+  waitForHidden,
   waitForSelectors,
   waitStable,
 } from './wait.js';

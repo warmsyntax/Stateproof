@@ -1,4 +1,4 @@
-import type { RunResult, ScenarioFile, ScenarioOutcome } from '@stateproof/core';
+import type { RunResult } from '@stateproof-dev/core';
 import pc from 'picocolors';
 
 export function formatDuration(ms: number): string {
@@ -72,7 +72,8 @@ export interface HumanListSummaryInput {
     id: string;
     label?: string | undefined;
     note?: string | undefined;
-    request: { method: string; urlPattern: string };
+    request?: { method: string; urlPattern: string } | undefined;
+    websocket?: { urlPattern: string } | undefined;
   }>;
 }
 
@@ -88,13 +89,22 @@ export function renderHumanListSummary(file: HumanListSummaryInput): string {
     { name: 'mobile', width: 390, height: 844 },
   ];
 
-  lines.push(pc.dim(`Viewports (${viewports.length}): ${viewports.map((v) => `${v.name} (${v.width}x${v.height})`).join(', ')}`));
+  lines.push(
+    pc.dim(
+      `Viewports (${viewports.length}): ${viewports.map((v) => `${v.name} (${v.width}x${v.height})`).join(', ')}`,
+    ),
+  );
   lines.push(pc.dim(`Scenarios (${file.scenarios.length}):`));
   lines.push('');
 
   for (const s of file.scenarios) {
     const label = s.label ? ` (${s.label})` : '';
-    lines.push(`  • ${pc.bold(s.id)}${label} — ${s.request.method} ${s.request.urlPattern}`);
+    const reqDesc = s.request
+      ? `${s.request.method} ${s.request.urlPattern}`
+      : s.websocket
+        ? `WS ${s.websocket.urlPattern}`
+        : '';
+    lines.push(`  • ${pc.bold(s.id)}${label}${reqDesc ? ` — ${reqDesc}` : ''}`);
     if (s.note) {
       lines.push(`    ${pc.dim(s.note)}`);
     }

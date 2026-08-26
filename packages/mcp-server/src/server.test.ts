@@ -1,10 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createStateproofMcpServer } from './server.js';
 
@@ -40,15 +37,31 @@ const sampleScenarioFile = {
   ],
 };
 
-describe('@stateproof/mcp-server', () => {
+type McpHandler = (
+  req: unknown,
+  extra: unknown,
+) => Promise<{
+  isError?: boolean;
+  tools?: Array<{ name: string }>;
+  content?: Array<{ type: string; text: string }>;
+}>;
+
+interface ServerInternal {
+  _requestHandlers: Map<string, McpHandler>;
+}
+
+describe('@stateproof-dev/mcp-server', () => {
   it('exposes stateproof tools in list_tools schema', async () => {
     const server = createStateproofMcpServer();
     // Directly test the registered list tools handler
-    const handler = (server as any)._requestHandlers.get(ListToolsRequestSchema.shape.method.value);
+    const handler = (server as unknown as ServerInternal)._requestHandlers.get(
+      ListToolsRequestSchema.shape.method.value,
+    );
     expect(handler).toBeDefined();
+    if (!handler) return;
 
     const response = await handler({ method: 'tools/list' }, {});
-    const toolNames = response.tools.map((t: any) => t.name);
+    const toolNames = (response.tools ?? []).map((t) => t.name);
 
     expect(toolNames).toContain('stateproof_list_scenarios');
     expect(toolNames).toContain('stateproof_run_validation');
@@ -61,8 +74,11 @@ describe('@stateproof/mcp-server', () => {
     writeFileSync(filePath, JSON.stringify(sampleScenarioFile, null, 2), 'utf-8');
 
     const server = createStateproofMcpServer();
-    const handler = (server as any)._requestHandlers.get(CallToolRequestSchema.shape.method.value);
+    const handler = (server as unknown as ServerInternal)._requestHandlers.get(
+      CallToolRequestSchema.shape.method.value,
+    );
     expect(handler).toBeDefined();
+    if (!handler) return;
 
     const response = await handler(
       {
@@ -80,7 +96,7 @@ describe('@stateproof/mcp-server', () => {
 
     expect(response.isError).toBeFalsy();
     expect(response.content).toHaveLength(1);
-    const parsedEnvelope = JSON.parse(response.content[0].text);
+    const parsedEnvelope = JSON.parse(response.content?.[0]?.text ?? '{}');
     expect(parsedEnvelope.ok).toBe(true);
     expect(parsedEnvelope.type).toBe('list.result');
     expect(parsedEnvelope.data.name).toBe('account-settings');
@@ -94,7 +110,7 @@ describe('@stateproof/mcp-server', () => {
     const runJsonContent = {
       schemaVersion: 1,
       runId: 'mcp-run-999',
-      stateproofVersion: '0.1.0',
+      stateproofVersion: '0.1.3',
       browserVersion: '141',
       startedAt: '2026-08-24T10:00:00Z',
       finishedAt: '2026-08-24T10:00:05Z',
@@ -117,7 +133,11 @@ describe('@stateproof/mcp-server', () => {
     writeFileSync(join(artifactDir, 'run.json'), JSON.stringify(runJsonContent, null, 2), 'utf-8');
 
     const server = createStateproofMcpServer();
-    const handler = (server as any)._requestHandlers.get(CallToolRequestSchema.shape.method.value);
+    const handler = (server as unknown as ServerInternal)._requestHandlers.get(
+      CallToolRequestSchema.shape.method.value,
+    );
+    expect(handler).toBeDefined();
+    if (!handler) return;
 
     const response = await handler(
       {
@@ -134,7 +154,7 @@ describe('@stateproof/mcp-server', () => {
     );
 
     expect(response.isError).toBeFalsy();
-    const parsedEnvelope = JSON.parse(response.content[0].text);
+    const parsedEnvelope = JSON.parse(response.content?.[0]?.text ?? '{}');
     expect(parsedEnvelope.type).toBe('inspect.result');
     expect(parsedEnvelope.data.runId).toBe('mcp-run-999');
     expect(parsedEnvelope.data.failureCode).toBe('selector-timeout');
@@ -142,7 +162,11 @@ describe('@stateproof/mcp-server', () => {
 
   it('returns structured error on unknown tool call', async () => {
     const server = createStateproofMcpServer();
-    const handler = (server as any)._requestHandlers.get(CallToolRequestSchema.shape.method.value);
+    const handler = (server as unknown as ServerInternal)._requestHandlers.get(
+      CallToolRequestSchema.shape.method.value,
+    );
+    expect(handler).toBeDefined();
+    if (!handler) return;
 
     const response = await handler(
       {
@@ -156,6 +180,6 @@ describe('@stateproof/mcp-server', () => {
     );
 
     expect(response.isError).toBe(true);
-    expect(response.content[0].text).toContain('Unknown tool name');
+    expect(response.content?.[0]?.text).toContain('Unknown tool name');
   });
 });

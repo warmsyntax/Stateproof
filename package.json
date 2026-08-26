@@ -1,8 +1,16 @@
 {
   "name": "stateproof",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/warmsyntax/Stateproof.git"
+  },
+  "homepage": "https://stateproof.dev",
+  "bugs": {
+    "url": "https://github.com/warmsyntax/Stateproof/issues"
+  },
   "packageManager": "pnpm@10.17.0",
   "engines": {
     "node": ">=20"

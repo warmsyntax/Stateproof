@@ -3,12 +3,12 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import * as p from '@clack/prompts';
 import {
+  type AppRunOptions,
   executeRun,
   loadAndValidateScenarioFile,
   runSecretAudit,
-  type AppRunOptions,
-} from '@stateproof/app';
-import { StateproofError } from '@stateproof/core';
+} from '@stateproof-dev/app';
+import { StateproofError } from '@stateproof-dev/core';
 import pc from 'picocolors';
 import { renderHumanRunSummary } from '../reporters/human.js';
 
@@ -61,7 +61,11 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
     const scenarioChoices = file.scenarios.map((s) => ({
       value: s.id,
       label: s.label ? `${s.label} (${s.id})` : s.id,
-      hint: `${s.request.method} ${s.request.urlPattern}`,
+      hint: s.request
+        ? `${s.request.method} ${s.request.urlPattern}`
+        : s.websocket
+          ? `WS ${s.websocket.urlPattern}`
+          : '',
     }));
 
     const selectedScenarioIds = (await p.multiselect({
@@ -77,10 +81,12 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
     }
 
     // 2. Viewport selection
-    const viewportChoices = (file.viewports ?? [
-      { name: 'desktop', width: 1440, height: 1024 },
-      { name: 'mobile', width: 390, height: 844 },
-    ]).map((v) => ({
+    const viewportChoices = (
+      file.viewports ?? [
+        { name: 'desktop', width: 1440, height: 1024 },
+        { name: 'mobile', width: 390, height: 844 },
+      ]
+    ).map((v) => ({
       value: v.name,
       label: `${v.name} (${v.width}x${v.height})`,
     }));
@@ -101,9 +107,21 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
     const mode = (await p.select({
       message: 'Select action to perform:',
       options: [
-        { value: 'run', label: 'Run State Validation', hint: 'Catch-all interception & assertions' },
-        { value: 'diff', label: 'Run Visual Diff Regression', hint: 'Compare screenshots against committed baselines' },
-        { value: 'update-baselines', label: 'Update Visual Baselines', hint: 'Save current captures to stateproof/baselines/' },
+        {
+          value: 'run',
+          label: 'Run State Validation',
+          hint: 'Catch-all interception & assertions',
+        },
+        {
+          value: 'diff',
+          label: 'Run Visual Diff Regression',
+          hint: 'Compare screenshots against committed baselines',
+        },
+        {
+          value: 'update-baselines',
+          label: 'Update Visual Baselines',
+          hint: 'Save current captures to stateproof/baselines/',
+        },
       ],
     })) as 'run' | 'diff' | 'update-baselines';
 
@@ -135,7 +153,11 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
       lastExitCode = result.exitCode;
 
       if (result.exitCode === 0) {
-        s.stop(pc.green(`Execution completed successfully (${result.result.scenarios.length} combo(s) passed).`));
+        s.stop(
+          pc.green(
+            `Execution completed successfully (${result.result.scenarios.length} combo(s) passed).`,
+          ),
+        );
       } else {
         const failedCount = result.result.scenarios.filter((sc) => sc.status !== 'passed').length;
         s.stop(pc.red(`Execution finished with ${failedCount} failure(s) / error(s).`));

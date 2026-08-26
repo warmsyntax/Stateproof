@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stateproof — Precise Runtime Proof for Web Applications</title>
+  <meta name="description" content="Stateproof is a runtime proof system for web applications. Force loading, empty, error, and offline states in a controlled Chromium browser. No MSW, no proxy, no app edits.">
+  <meta name="theme-color" content="#101925">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate" type="text/plain" href="llms.txt" title="LLMs.txt for AI Agents">
+
+  <!-- Preconnect and load strict typography fonts: Space Grotesk, Silkscreen, IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Silkscreen&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="color-ledger">
+
+  <!-- 00 NAV -->
+  <header class="site-nav" id="top-nav">
+    <div class="nav-inner">
+      <a href="#top" class="brand-group" aria-label="Stateproof Home">
+        <svg class="brand-logo" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="2" y="2" width="9" height="9" rx="1.5" fill="#1864F6"/>
+          <rect x="13" y="2" width="9" height="9" rx="1.5" fill="#F04423"/>
+          <rect x="2" y="13" width="9" height="9" rx="1.5" fill="#00A3C4"/>
+          <rect x="13" y="13" width="9" height="9" rx="1.5" fill="#B4DC17"/>
+        </svg>
+        <span class="brand-name">STATEPROOF</span>
+        <span class="brand-tag">v0.1.1</span>
+      </a>      <nav class="nav-links" aria-label="Section Navigation">
+        <a href="#mechanism" class="nav-link"><span class="nav-num">01</span> Mechanism</a>
+        <a href="#capabilities" class="nav-link"><span class="nav-num">02</span> Capabilities</a>
+        <a href="#integrity" class="nav-link"><span class="nav-num">03</span> Integrity</a>
+        <a href="#closing" class="nav-link"><span class="nav-num">04</span> Run Proof</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/stateproof/stateproof" target="_blank" rel="noopener noreferrer" class="nav-github-link" aria-label="View Stateproof on GitHub">
+          <svg class="gh-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          <span>GitHub</span>
+          <span class="arrow-glyph">↗</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+
+    <!-- 00 MINERAL HERO (DYNAMIC COCKPIT) -->
+    <section class="field field--mineral hero-section" id="hero" aria-labelledby="hero-title">
+      <div class="field-container">
+        <div class="field-tab">
+          <span class="pixel-id">00 // RUNTIME ATLAS</span>
+          <span class="field-rule"></span>
+          <span class="pixel-meta">DETERMINISTIC SPECIFICATION COCKPIT</span>
+        </div>
+
+        <div class="hero-cockpit">
+          <div class="hero-content-col">
+            <div class="hero-headline-wrap">
+              <h1 id="hero-title" class="hero-headline">
+                <span class="line-mask"><span class="line-text">LET AGENTS BUILD FAST.</span></span>
+                <span class="line-mask"><span class="line-text"><span class="underline-sweep">PROVE THE UI SURVIVES REAL STATES.</span></span></span>
+              </h1>
+              <p class="hero-subtext">
+                Deterministic runtime proof for AI coding agents &amp; modern web applications. Intercepts HTTP &amp; WebSockets in a controlled Chromium browser. Proves loading, empty, error, state recovery loops, and offline fallbacks. Zero app edits.
+              </p>
+            </div>
+
+            <!-- Hero Command Actions Group -->
+            <div class="hero-actions-group">
+              <div class="command-box">
+                <div class="command-line">
+                  <span class="cmd-prompt">$</span>
+                  <code class="cmd-text">npx @stateproof-dev/cli init --url http://localhost:5173</code>
+                </div>
+                <button class="cmd-copy-btn copy-trigger" data-copy="npx @stateproof-dev/cli init --url http://localhost:5173" aria-label="Copy init command">
+                  <span class="btn-label">COPY</span>
+                </button>
+              </div>
+
+              <div class="hero-dual-actions">
+                <!-- Sleek MCP Stdio Strip -->
+                <div class="mcp-cmd-strip" id="mcp-ecosystem">
+                  <div class="mcp-strip-left">
+                    <span class="mcp-live-dot" aria-hidden="true"></span>
+                    <span class="mcp-label">MCP STDIO</span>
+                    <span class="mcp-cmd-divider">·</span>
+                    <span class="cmd-prompt">$</span>
+                    <code class="cmd-text">npx -y @stateproof-dev/mcp-server</code>
+                  </div>
+                  <button class="mcp-copy-btn copy-trigger" data-copy="npx -y @stateproof-dev/mcp-server" aria-label="Copy MCP server command">
+                    <span>COPY</span>
+                  </button>
+                </div>
+
+                <button class="btn-agent-prompt copy-trigger" data-copy="Setup Stateproof in this repository:&#10;1. Connect MCP Server: npx -y @stateproof-dev/mcp-server&#10;2. Initialize config: npx @stateproof-dev/cli init --url http://localhost:5173&#10;3. Generate stateproof.scenarios.json covering loading, empty, error (500), and offline states.&#10;4. Validate with: npx @stateproof-dev/cli run" aria-label="Copy prompt for AI coding agents">
+                  <svg class="prompt-icon-svg" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M2.5 4.5l4 3.5-4 3.5M8.5 12h5"/>
+                  </svg>
+                  <span class="btn-label">COPY AGENT PROMPT FOR CLAUDE / CURSOR</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 NAVY LEDGER -->
+    <section class="field field--navy mechanism-section" id="mechanism" aria-labelledby="mechanism-title">
+      <div class="ghost-watermark" aria-hidden="true">INTERCEPT</div>
+      <div class="bezel-ticks bezel-ticks--top" aria-hidden="true"></div>
+
+      <div class="field-container">
+        <div class="field-tab field-tab--navy">
+          <span class="pixel-id">01 // THE MECHANISM</span>
+          <span class="field-rule"></span>
+          <span class="pixel-meta">THREE-STEP DETERMINISTIC INTERCEPTION</span>
+        </div>
+
+        <div class="section-intro">
+          <h2 id="mechanism-title" class="section-headline mechanism-headline">The happy path is not proof.</h2>
+          <p class="section-lead mechanism-subhead">
+            Four synthetic responses injected directly at the wire before your UI renders. Zero application monkey-patching.
+          </p>
+        </div>
+
+        <!-- Four Ledger Rows -->
+        <div class="ledger-table" role="table" aria-label="Proof Mechanism Ledger">
+          <div class="ledger-header" role="row">
+            <span class="col-num" role="columnheader">ID</span>
+            <span class="col-state" role="columnheader">STATE</span>
+            <span class="col-response" role="columnheader">FORCED RESPONSE</span>
+            <span class="col-expect" role="columnheader">EXPECTED SELECTOR</span>
+            <span class="col-status" role="columnheader">STATUS</span>
+          </div>
+
+          <!-- Row 01 -->
+          <div class="ledger-row" role="row">
+            <span class="col-num" role="cell">01</span>
+            <span class="col-state" role="cell"><span class="state-tag state-tag--loading">LOADING</span></span>
+            <span class="col-response" role="cell"><code>response: delay 3000ms</code></span>
+            <span class="col-expect" role="cell"><code>expect [data-state='loading']</code></span>
+            <span class="col-status" role="cell"><span class="status-badge status-badge--pass"><span class="shape">■</span> PASS</span></span>
+          </div>
+
+          <!-- Row 02 -->
+          <div class="ledger-row" role="row">
+            <span class="col-num" role="cell">02</span>
+            <span class="col-state" role="cell"><span class="state-tag state-tag--empty">EMPTY</span></span>
+            <span class="col-response" role="cell"><code>response: fixture account-empty.json</code></span>
+            <span class="col-expect" role="cell"><code>expect [data-state='empty']</code></span>
+            <span class="col-status" role="cell"><span class="status-badge status-badge--pass"><span class="shape">■</span> PASS</span></span>
+          </div>
+
+          <!-- Row 03 -->
+          <div class="ledger-row ledger-row--fail-example" role="row">
+            <span class="col-num" role="cell">03</span>
+            <span class="col-state" role="cell"><span class="state-tag state-tag--error">ERROR</span></span>
+            <span class="col-response" role="cell">
+              <code>response: error 500</code>
+              <div class="coral-note">retry control missing &lt; 420px → FAIL</div>
+              <div class="coral-hint">hint: render a retry control below 420px</div>
+            </span>
+            <span class="col-expect" role="cell"><code>expect [data-state='error']</code></span>
+            <span class="col-status" role="cell"><span class="status-badge status-badge--fail"><span class="shape">▲</span> FAIL</span></span>
+          </div>
+
+          <!-- Row 04 -->
+          <div class="ledger-row" role="row">
+            <span class="col-num" role="cell">04</span>
+            <span class="col-state" role="cell"><span class="state-tag state-tag--offline">OFFLINE</span></span>
+            <span class="col-response" role="cell"><code>response: abort internetdisconnected</code></span>
+            <span class="col-expect" role="cell"><code>expect [data-state='offline']</code></span>
+            <span class="col-status" role="cell"><span class="status-badge status-badge--pass"><span class="shape">■</span> PASS</span></span>
+          </div>
+        </div>
+
+        <div class="ledger-footnote">
+          <span class="mono-meta">Default viewports: desktop 1440×1024 · mobile 390×844</span>
+          <span class="mono-meta">Exit codes: 0 (PASS) · 1 (FAIL) · 2 (ERROR) · 3 (TIMEOUT) · 4 (CRASH)</span>
+        </div>
+      </div>
+
+      <div class="bezel-ticks bezel-ticks--bottom" aria-hidden="true"></div>
+    </section>
+
+
+
+    <!-- TECHNICAL TICKER STRIP -->
+    <div class="ticker-strip" aria-hidden="true">
+      <div class="ticker-track">
+        <span class="ticker-item">delay 3000ms</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">fixture account-empty.json</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">status 500</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">internetdisconnected</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">exit 0</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">exit 1</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">[data-state='loading']</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">viewport 1440×1024</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">Chromium 141</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">loopback guardrail</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">zero telemetry</span>
+        <span class="ticker-sep">▪</span>
+        <!-- Duplicate for continuous loop -->
+        <span class="ticker-item">delay 3000ms</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">fixture account-empty.json</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">status 500</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">internetdisconnected</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">exit 0</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">exit 1</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">[data-state='loading']</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">viewport 1440×1024</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">Chromium 141</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">loopback guardrail</span>
+        <span class="ticker-sep">▪</span>
+        <span class="ticker-item">zero telemetry</span>
+      </div>
+    </div>
+
+    <!-- 02 CAPABILITIES SPECTRUM (DIAGNOSTIC SPINE + PARALLAX BACKDROP) -->
+    <section class="field field--mineral capabilities-section" id="capabilities" aria-labelledby="capabilities-title">
+      
+      <!-- Alive Industrial Parallax Matrix Backdrop -->
+      <div class="parallax-backdrop" aria-hidden="true">
+        <!-- Deep Layer: Blueprint Dot-Matrix, Laser Scan Beam & Caliper Ticks -->
+        <div class="parallax-layer parallax-layer--deep" id="parallax-deep">
+          <div class="pl-circuit-grid"></div>
+          <div class="pl-laser-sweep"></div>
+          <div class="pl-caliper pl-caliper--left"></div>
+          <div class="pl-caliper pl-caliper--right"></div>
+        </div>
+
+        <!-- Mid Layer: Dynamic Rotating Inspection Reticles & Hologram Wafers -->
+        <div class="parallax-layer parallax-layer--mid" id="parallax-mid">
+          <div class="pl-reticle pl-reticle--1">
+            <div class="reticle-ring"></div>
+            <div class="reticle-cross"></div>
+          </div>
+          <div class="pl-reticle pl-reticle--2">
+            <div class="reticle-ring"></div>
+            <div class="reticle-cross"></div>
+          </div>
+          <div class="pl-hologram-card pl-card--1">
+            <div class="hologram-glow"></div>
+            <span class="hologram-label">CDP_INSPECT_BUS</span>
+          </div>
+          <div class="pl-hologram-card pl-card--2">
+            <div class="hologram-glow"></div>
+            <span class="hologram-label">DIFF_MATRIX_0.00%</span>
+          </div>
+        </div>
+
+        <!-- Fore Layer: Ambient Focal Optical Blooms & Floating Geometric Markers -->
+        <div class="parallax-layer parallax-layer--fore" id="parallax-fore">
+          <div class="pl-ambient-bloom pl-bloom--chartreuse"></div>
+          <div class="pl-ambient-bloom pl-bloom--cobalt"></div>
+          <div class="pl-geo-marker pl-marker--1"></div>
+          <div class="pl-geo-marker pl-marker--2"></div>
+        </div>
+      </div>
+
+      <div class="field-container">
+        <div class="field-tab">
+          <span class="pixel-id">02 // CAPABILITIES</span>
+          <span class="field-rule"></span>
+          <span class="pixel-meta">LINEAR DIAGNOSTIC SPINE &amp; SPECTRUM</span>
+        </div>
+
+        <div class="section-intro">
+          <h2 id="capabilities-title" class="section-headline">Deterministic state engine. No flakiness.</h2>
+          <p class="section-lead">
+            Built as a physical inspection pipeline. Four specialized runtime instruments verify complex transitions without brittle mocks.
+          </p>
+        </div>
+
+        <!-- The Continuous Diagnostic Spine -->
+        <div class="diagnostic-spine">
+          
+          <!-- Station 01: Zero-Friction Attach & Channel Scanner -->
+          <div class="spine-station station-launch">
+            <div class="spine-node">
+              <span class="node-id">01</span>
+              <div class="node-pulse-line"></div>
+            </div>
+            <div class="station-body station-body--split">
+              <div class="station-copy">
+                <div class="station-meta-tag">
+                  <span class="meta-badge meta-badge--blue">LAUNCH ENGINE</span>
+                  <span class="meta-spec">0MB PREFLIGHT · ZERO INSTALL</span>
+                </div>
+                <h3 class="station-title">Zero-Friction System Browser Attach</h3>
+                <p class="station-desc">
+                  Auto-detects and connects directly to local Google Chrome or Microsoft Edge binaries on macOS, Linux, and Windows. No 115MB browser downloads, no sandbox lock-in. Attaches to remote CDP instances seamlessly.
+                </p>
+              </div>
+              <div class="station-instrument station-instrument--channels">
+                <div class="instrument-header">
+                  <span class="instrument-title">PREFLIGHT DETECTOR</span>
+                  <span class="instrument-status">● READY</span>
+                </div>
+                <div class="channel-pills-row">
+                  <span class="channel-pill is-active">● GOOGLE CHROME (LOCAL)</span>
+                  <span class="channel-pill">MS EDGE</span>
+                  <span class="channel-pill">--cdp-url</span>
+                </div>
+                <div class="instrument-readout">
+                  <span class="readout-label">PATH:</span>
+                  <code class="readout-code">auto-detected / local system channel</code>
+                </div>
+                <div class="instrument-footer-stat">
+                  <span>PREFLIGHT TIME: <strong class="text-chartreuse">0.00s</strong></span>
+                  <span>DOWNLOAD: <strong class="text-chartreuse">0.00 MB</strong></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Station 02: State Recovery Loops Timeline -->
+          <div class="spine-station station-recovery">
+            <div class="spine-node">
+              <span class="node-id">02</span>
+              <div class="node-pulse-line"></div>
+            </div>
+            <div class="station-body station-body--wide">
+              <div class="station-copy-wide">
+                <div class="station-meta-tag">
+                  <span class="meta-badge meta-badge--coral">RECOVERY LOOP ENGINE</span>
+                  <span class="meta-spec">INTERACTIVE USER INTERVENTION</span>
+                </div>
+                <h3 class="station-title">State Recovery Verification Loops</h3>
+                <p class="station-desc">
+                  Proves user retry clicks genuinely restore application state. Injects HTTP 500 errors, verifies the error banner, clicks retry, re-fulfills the endpoint, and captures dual before/after timestamped evidence.
+                </p>
+              </div>
+              <!-- Timeline Flow Pipeline -->
+              <div class="recovery-timeline-pipe">
+                <div class="timeline-step step-error">
+                  <div class="step-badge">1. INJECT 500</div>
+                  <div class="step-card">
+                    <span class="step-card-status">FAIL INJECTED</span>
+                    <span class="step-card-file">error.desktop.png</span>
+                  </div>
+                </div>
+                <div class="timeline-connector">
+                  <span class="pipe-arrow">──▶</span>
+                  <span class="pipe-label">CLICK RETRY</span>
+                </div>
+                <div class="timeline-step step-action">
+                  <div class="step-badge">2. AGENT ACTION</div>
+                  <div class="step-card">
+                    <span class="step-card-status">ACTION TRIGGER</span>
+                    <span class="step-card-file">[data-testid='retry']</span>
+                  </div>
+                </div>
+                <div class="timeline-connector">
+                  <span class="pipe-arrow">──▶</span>
+                  <span class="pipe-label">200 OK</span>
+                </div>
+                <div class="timeline-step step-recovered">
+                  <div class="step-badge">3. RE-FULFILL</div>
+                  <div class="step-card">
+                    <span class="step-card-status text-emerald">✓ RECOVERED</span>
+                    <span class="step-card-file">error.recovered.desktop.png</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Station 03: WebSocket & Stream Interceptor -->
+          <div class="spine-station station-stream">
+            <div class="spine-node">
+              <span class="node-id">03</span>
+              <div class="node-pulse-line"></div>
+            </div>
+            <div class="station-body station-body--split">
+              <div class="station-copy">
+                <div class="station-meta-tag">
+                  <span class="meta-badge meta-badge--teal">REAL-TIME INTERCEPT</span>
+                  <span class="meta-spec">CDP NATIVE STREAM CUTTER</span>
+                </div>
+                <h3 class="station-title">Live WebSocket &amp; SSE Connection Drops</h3>
+                <p class="station-desc">
+                  Simulates sudden network disconnects and packet drops on live WebSocket &amp; Server-Sent Event feeds directly via Chrome DevTools Protocol. Verifies reconnecting banners and offline fallbacks without any local mock proxy.
+                </p>
+              </div>
+              <div class="station-instrument station-instrument--socket">
+                <div class="socket-screen-top">
+                  <span class="socket-url">wss://feed.market/v1/live</span>
+                  <span class="socket-action-tag">CDP SEVER AT 250ms</span>
+                </div>
+                <div class="socket-waveform-display">
+                  <div class="wave-line wave-line--active"></div>
+                  <div class="wave-cut-marker">✖ DISCONNECT</div>
+                  <div class="wave-line wave-line--flat"></div>
+                </div>
+                <div class="socket-result-bar">
+                  <span class="text-emerald">✓ ASSERTED FALLBACK:</span>
+                  <code>[data-state='reconnecting'] (14ms)</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Station 04: Strict DOM & Visual Diff Lens -->
+          <div class="spine-station station-lens">
+            <div class="spine-node">
+              <span class="node-id">04</span>
+            </div>
+            <div class="station-body station-body--split">
+              <div class="station-copy">
+                <div class="station-meta-tag">
+                  <span class="meta-badge meta-badge--chartreuse">STRICT SPECIFICATION</span>
+                  <span class="meta-spec">DOM ATTRIBUTES &amp; PIXEL REGRESSION</span>
+                </div>
+                <h3 class="station-title">Multi-Condition DOM &amp; Visual Regression Lens</h3>
+                <p class="station-desc">
+                  Enforces strict assertions across visibility, text content, and ARIA state transitions like <code>aria-busy="false"</code>. Captures pixel-perfect screenshots and computes sub-pixel visual regression diffs.
+                </p>
+              </div>
+              <div class="station-instrument station-instrument--dom">
+                <div class="dom-table-header">
+                  <span>ASSERTION TARGET</span>
+                  <span>STATUS</span>
+                </div>
+                <div class="dom-rule-row">
+                  <code>visible: [data-state='ready']</code>
+                  <span class="status-pill status-pill--pass">PASS</span>
+                </div>
+                <div class="dom-rule-row">
+                  <code>hidden: [data-state='skeleton']</code>
+                  <span class="status-pill status-pill--pass">PASS</span>
+                </div>
+                <div class="dom-rule-row">
+                  <code>attr: aria-busy="false"</code>
+                  <span class="status-pill status-pill--pass">PASS</span>
+                </div>
+                <div class="dom-rule-row">
+                  <code>visual: pixel-diff &lt; 0.01%</code>
+                  <span class="status-pill status-pill--pass">PASS</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 TEAL INTEGRITY -->
+    <section class="field field--teal trust-section" id="integrity" aria-labelledby="integrity-title">
+      <div class="ghost-watermark" aria-hidden="true">AIRGAP</div>
+      <div class="bezel-ticks bezel-ticks--top" aria-hidden="true"></div>
+
+      <!-- Architectural Airgap Depth Schematic Background (Faded, Blurred, Parallax-linked) -->
+      <div class="integrity-bg-schematic" id="integrity-bg-depth" aria-hidden="true">
+        <svg class="schematic-svg" viewBox="0 0 1440 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Airgap Technical Coordinate Grid -->
+          <defs>
+            <pattern id="integrity-tech-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+              <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(244, 240, 229, 0.07)" stroke-width="1"/>
+              <circle cx="0" cy="0" r="1.5" fill="rgba(205, 234, 79, 0.25)"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#integrity-tech-grid)"/>
+
+          <!-- 127.0.0.1 Loopback Isolation Perimeter Radar -->
+          <circle cx="280" cy="480" r="340" stroke="rgba(244, 240, 229, 0.12)" stroke-width="1.5" stroke-dasharray="8 8"/>
+          <circle cx="280" cy="480" r="240" stroke="rgba(205, 234, 79, 0.18)" stroke-width="1.5"/>
+          <circle cx="280" cy="480" r="130" stroke="rgba(244, 240, 229, 0.15)" stroke-width="1"/>
+          <circle cx="280" cy="480" r="6" fill="rgba(205, 234, 79, 0.5)"/>
+
+          <!-- CDP Protocol Spine Vector & Axis Lines -->
+          <path d="M 280 40 L 280 920" stroke="rgba(244, 240, 229, 0.16)" stroke-width="2" stroke-dasharray="10 5"/>
+          <path d="M 40 480 L 1400 480" stroke="rgba(244, 240, 229, 0.1)" stroke-width="1.5"/>
+
+          <!-- Airgap Isolation Firewall Boundary Line -->
+          <path d="M 780 80 L 780 880" stroke="rgba(232, 91, 60, 0.35)" stroke-width="2.5" stroke-dasharray="14 6"/>
+          <path d="M 730 260 L 830 260" stroke="rgba(232, 91, 60, 0.4)" stroke-width="1.5"/>
+          <path d="M 730 480 L 830 480" stroke="rgba(232, 91, 60, 0.55)" stroke-width="2"/>
+          <path d="M 730 700 L 830 700" stroke="rgba(232, 91, 60, 0.4)" stroke-width="1.5"/>
+
+          <!-- Perspective Conduit Junctions (Cobalt Process Node & Chartreuse Evidence Node) -->
+          <circle cx="1180" cy="260" r="70" stroke="rgba(45, 107, 243, 0.28)" stroke-width="1.5"/>
+          <circle cx="1180" cy="260" r="6" fill="rgba(45, 107, 243, 0.6)"/>
+          <path d="M 1090 260 L 1270 260 M 1180 170 L 1180 350" stroke="rgba(45, 107, 243, 0.18)" stroke-width="1.5"/>
+
+          <circle cx="1180" cy="720" r="80" stroke="rgba(205, 234, 79, 0.25)" stroke-width="1.5"/>
+          <circle cx="1180" cy="720" r="6" fill="rgba(205, 234, 79, 0.6)"/>
+          <path d="M 1080 720 L 1280 720 M 1180 620 L 1180 820" stroke="rgba(205, 234, 79, 0.18)" stroke-width="1.5"/>
+
+          <!-- Calibration Crosshairs -->
+          <path d="M 50 60 L 80 60 M 50 60 L 50 90" stroke="rgba(244, 240, 229, 0.3)" stroke-width="2"/>
+          <path d="M 1390 60 L 1360 60 M 1390 60 L 1390 90" stroke="rgba(244, 240, 229, 0.3)" stroke-width="2"/>
+          <path d="M 50 900 L 80 900 M 50 900 L 50 870" stroke="rgba(244, 240, 229, 0.3)" stroke-width="2"/>
+          <path d="M 1390 900 L 1360 900 M 1390 900 L 1390 870" stroke="rgba(244, 240, 229, 0.3)" stroke-width="2"/>
+        </svg>
+
+        <div class="schematic-depth-blur"></div>
+      </div>
+
+      <div class="field-container">
+        <div class="field-tab field-tab--teal">
+          <span class="pixel-id">03 // INTEGRITY &amp; GUARDRAILS</span>
+          <span class="field-rule"></span>
+          <span class="pixel-meta">LOCAL-FIRST ARCHITECTURAL SPECIFICATION</span>
+        </div>
+
+        <div class="section-intro">
+          <h2 id="integrity-title" class="section-headline">Local-first by architecture, not by promise.</h2>
+          <p class="section-lead">
+            Built for security-conscious teams and airgapped CI pipelines. Interception lives strictly in our controlled browser process with zero telemetry.
+          </p>
+        </div>
+
+        <!-- Asymmetrical Architectural Conduit Layout (7 cols / 5 cols) -->
+        <div class="integrity-conduit-layout">
+          
+          <!-- Left Column (7 cols): Stacked Security Protocol Ledger -->
+          <div class="integrity-protocol-ledger" role="list">
+            
+            <!-- Tier 01 -->
+            <div class="protocol-tier is-active" data-chamber="airgap" role="listitem" tabindex="0">
+              <div class="tier-gutter">
+                <span class="tier-pixel-num text-chartreuse">01</span>
+                <div class="tier-spine-line"></div>
+              </div>
+              <div class="tier-content">
+                <div class="tier-top-meta">
+                  <span class="tier-badge badge-chartreuse">● ZERO TELEMETRY</span>
+                  <code class="tier-env-tag">rule: §R1 AIRGAP</code>
+                </div>
+                <h3 class="tier-headline">Zero Telemetry Execution</h3>
+                <p class="tier-prose">
+                  No external analytics, tracking scripts, or cloud phone-home beacons. All synthetic interception and state evaluation runs 100% locally on your workstation or CI agent.
+                </p>
+                <div class="tier-telemetry-row">
+                  <div class="tel-chip"><span class="tel-k">OUTBOUND BEACONS:</span> <span class="tel-v text-chartreuse">0 PACKETS</span></div>
+                  <div class="tel-chip"><span class="tel-k">NETWORK EGRESS:</span> <span class="tel-v text-mineral">BLOCKED</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tier 02 -->
+            <div class="protocol-tier" data-chamber="cdp" role="listitem" tabindex="0">
+              <div class="tier-gutter">
+                <span class="tier-pixel-num text-chartreuse">02</span>
+                <div class="tier-spine-line"></div>
+              </div>
+              <div class="tier-content">
+                <div class="tier-top-meta">
+                  <span class="tier-badge badge-cobalt">● PURE CDP ATTACH</span>
+                  <code class="tier-env-tag">rule: §R2 NO APP EDITS</code>
+                </div>
+                <h3 class="tier-headline">Controlled CDP Browser Process</h3>
+                <p class="tier-prose">
+                  Network interception happens directly at the Chromium protocol layer via Playwright CDP. Zero mock servers to maintain, zero monkey-patching in application source code.
+                </p>
+                <div class="tier-telemetry-row">
+                  <div class="tel-chip"><span class="tel-k">PROTOCOL WIRE:</span> <span class="tel-v text-cobalt">CHROME CDP / 141</span></div>
+                  <div class="tel-chip"><span class="tel-k">SOURCE TAMPER:</span> <span class="tel-v text-chartreuse">0 APP EDITS</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tier 03 -->
+            <div class="protocol-tier" data-chamber="origin" role="listitem" tabindex="0">
+              <div class="tier-gutter">
+                <span class="tier-pixel-num text-chartreuse">03</span>
+                <div class="tier-spine-line"></div>
+              </div>
+              <div class="tier-content">
+                <div class="tier-top-meta">
+                  <span class="tier-badge badge-mineral">● ORIGIN LOCKED</span>
+                  <code class="tier-env-tag">rule: §R3 LOOPBACK</code>
+                </div>
+                <h3 class="tier-headline">Loopback Origin Guardrail</h3>
+                <p class="tier-prose">
+                  Synthetic interception is hardcoded to <code>localhost</code> and <code>127.0.0.1</code> by default. External third-party origins require explicit opt-in via <code>--allow-remote</code>.
+                </p>
+                <div class="tier-telemetry-row">
+                  <div class="tel-chip"><span class="tel-k">SANDBOX ORIGIN:</span> <span class="tel-v text-chartreuse">127.0.0.1 LOCKED</span></div>
+                  <div class="tel-chip"><span class="tel-k">REMOTE OVERRIDE:</span> <span class="tel-v text-mist">--allow-remote</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tier 04 -->
+            <div class="protocol-tier" data-chamber="artifacts" role="listitem" tabindex="0">
+              <div class="tier-gutter">
+                <span class="tier-pixel-num text-chartreuse">04</span>
+                <div class="tier-spine-line"></div>
+              </div>
+              <div class="tier-content">
+                <div class="tier-top-meta">
+                  <span class="tier-badge badge-coral">● DISK-ONLY ARTIFACTS</span>
+                  <code class="tier-env-tag">rule: §R4 LOCAL DISK</code>
+                </div>
+                <h3 class="tier-headline">Self-Contained Offline Artifacts</h3>
+                <p class="tier-prose">
+                  Proof cards and test reports write to <code>./artifacts</code> as self-contained Markdown and standalone HTML. Opens directly from <code>file://</code> with zero external CDN dependencies.
+                </p>
+                <div class="tier-telemetry-row">
+                  <div class="tel-chip"><span class="tel-k">STORAGE TARGET:</span> <span class="tel-v text-coral">./artifacts/</span></div>
+                  <div class="tel-chip"><span class="tel-k">OFFLINE REPORT:</span> <span class="tel-v text-chartreuse">file:// READY</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Right Column (5 cols): Pinned Architectural Verification Sheet -->
+          <div class="integrity-chamber-col">
+            <div class="chamber-sticky-rig sheet sheet--navy" id="chamber-rig">
+              <div class="sheet-header">
+                <div class="sheet-title-group">
+                  <span class="sheet-dot"></span>
+                  <span class="sheet-title">VERIFICATION SPECIFICATION // RUNTIME AUDIT</span>
+                </div>
+                <span class="sheet-badge" id="chamber-mode-label">§R1 AIRGAP</span>
+              </div>
+
+              <!-- Chamber Stage -->
+              <div class="chamber-stage-screen">
+                
+                <!-- Stage 1: Zero Telemetry Airgap Specification -->
+                <div class="chamber-view is-active" id="chamber-view-airgap">
+                  <div class="spec-card">
+                    <div class="spec-card-header">
+                      <span class="spec-rule-tag">RULE §R1 // PROCESS AIRGAP</span>
+                      <span class="spec-status-pill status-pass">■ PASS</span>
+                    </div>
+                    <div class="spec-code-block">
+                      <div class="code-row"><span class="c-k">[egress]</span> <span class="c-v">socket_connect blocked</span> <span class="c-comment"># airgap active</span></div>
+                      <div class="code-row"><span class="c-k">[telemetry]</span> <span class="c-v">outbound beacons sent: 0</span></div>
+                      <div class="code-row"><span class="c-k">[analytics]</span> <span class="c-v">cloud phone-home: NONE</span></div>
+                      <div class="code-row"><span class="c-k">[env]</span> <span class="c-v text-chartreuse">LOCAL_AIRGAP_READY = true</span></div>
+                    </div>
+                    <div class="spec-footer-note">
+                      <span class="note-bullet">■</span>
+                      <span>Guarantee: Execution stays 100% on workstation. No data leaves disk.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stage 2: Controlled CDP Wire Specification -->
+                <div class="chamber-view" id="chamber-view-cdp">
+                  <div class="spec-card">
+                    <div class="spec-card-header">
+                      <span class="spec-rule-tag">RULE §R2 // CDP PROTOCOL ATTACH</span>
+                      <span class="spec-status-pill status-pass">■ PASS</span>
+                    </div>
+                    <div class="spec-code-block">
+                      <div class="code-row"><span class="c-k">[browser]</span> <span class="c-v">Chromium 141 (Playwright CDP)</span></div>
+                      <div class="code-row"><span class="c-k">[protocol]</span> <span class="c-v">Network.setRequestInterception</span></div>
+                      <div class="code-row"><span class="c-k">[source]</span> <span class="c-v text-chartreuse">app code edits: 0</span> <span class="c-comment"># zero MSW / proxy</span></div>
+                      <div class="code-row"><span class="c-k">[runtime]</span> <span class="c-v">synthetic injection at wire level</span></div>
+                    </div>
+                    <div class="spec-footer-note">
+                      <span class="note-bullet">■</span>
+                      <span>Guarantee: Interception lives in browser process, never inside app code.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stage 3: Origin Radar Specification -->
+                <div class="chamber-view" id="chamber-view-origin">
+                  <div class="spec-card">
+                    <div class="spec-card-header">
+                      <span class="spec-rule-tag">RULE §R3 // LOOPBACK GUARDRAIL</span>
+                      <span class="spec-status-pill status-pass">■ PASS</span>
+                    </div>
+                    <div class="spec-code-block">
+                      <div class="code-row"><span class="c-k">[origin]</span> <span class="c-v">http://localhost:5173/account</span></div>
+                      <div class="code-row"><span class="c-k">[allowlist]</span> <span class="c-v">127.0.0.1 · localhost</span></div>
+                      <div class="code-row"><span class="c-k">[remote]</span> <span class="c-v text-coral">external origins denied</span></div>
+                      <div class="code-row"><span class="c-k">[flag]</span> <span class="c-v text-chartreuse">--allow-remote is explicit</span></div>
+                    </div>
+                    <div class="spec-footer-note">
+                      <span class="note-bullet">■</span>
+                      <span>Guarantee: External network endpoints strictly locked behind explicit CLI flag.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stage 4: Disk Artifacts Specification -->
+                <div class="chamber-view" id="chamber-view-artifacts">
+                  <div class="spec-card">
+                    <div class="spec-card-header">
+                      <span class="spec-rule-tag">RULE §R4 // STANDALONE ARTIFACTS</span>
+                      <span class="spec-status-pill status-pass">■ PASS</span>
+                    </div>
+                    <div class="spec-code-block">
+                      <div class="code-row"><span class="c-k">[output]</span> <span class="c-v">./artifacts/account-settings/</span></div>
+                      <div class="code-row"><span class="c-k">[proof]</span> <span class="c-v">account-loading.desktop.png (48KB)</span></div>
+                      <div class="code-row"><span class="c-k">[report]</span> <span class="c-v text-chartreuse">report.html (standalone file://)</span></div>
+                      <div class="code-row"><span class="c-k">[cloud]</span> <span class="c-v">external CDN dependencies: 0</span></div>
+                    </div>
+                    <div class="spec-footer-note">
+                      <span class="note-bullet">■</span>
+                      <span>Guarantee: Report opens directly from disk with zero network connection.</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Chamber Footer Readout -->
+              <div class="sheet-footer">
+                <span class="mono-meta">ARCHITECTURAL AUDIT: <strong class="text-chartreuse">VERIFIED PASS</strong></span>
+                <span class="mono-meta">100% LOCAL-FIRST</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="bezel-ticks bezel-ticks--bottom" aria-hidden="true"></div>
+    </section>
+
+    <!-- 04 INK CLOSING -->
+    <section class="field field--ink closing-section" id="closing" aria-labelledby="closing-title">
+      <div class="field-container">
+        <div class="field-tab field-tab--ink">
+          <span class="pixel-id">04 // RUN PROOF</span>
+          <span class="field-rule"></span>
+          <span class="pixel-meta">FIRST-RUN INVITATION</span>
+        </div>
+
+        <div class="closing-grid">
+          <!-- Left Column (7 cols): Interactive Multi-Step Terminal & Actions -->
+          <div class="closing-main">
+            <h2 id="closing-title" class="closing-headline">
+              PROVE YOUR RUNTIME<br>IN FOUR COMMANDS.
+            </h2>
+            <p class="closing-lead">
+              Drop Stateproof into your project. Intercept real runtime failure modes against localhost in under 60 seconds.
+            </p>
+
+            <!-- Rich Terminal Console -->
+            <div class="closing-terminal-console">
+              <div class="console-top-bar">
+                <div class="console-tab-group">
+                  <span class="console-tab is-active"><span class="tab-dot"></span> BASH / TERMINAL</span>
+                </div>
+                <div class="console-actions">
+                  <span class="console-env">NODE ≥ 20</span>
+                  <button class="terminal-copy-btn copy-trigger" data-copy="npx @stateproof-dev/cli init --url http://localhost:3000 --route /settings&#10;npx @stateproof-dev/cli --tui&#10;npx @stateproof-dev/cli run" aria-label="Copy all commands">
+                    <span>COPY ALL</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="console-body">
+                <div class="term-line">
+                  <span class="t-prompt">$</span>
+                  <span class="t-cmd">npx @stateproof-dev/cli init</span>
+                  <span class="t-flag">--url</span>
+                  <span class="t-val">http://localhost:3000</span>
+                  <span class="t-flag">--route</span>
+                  <span class="t-val">/settings</span>
+                </div>
+                <div class="term-line">
+                  <span class="t-prompt">$</span>
+                  <span class="t-cmd">npx @stateproof-dev/cli</span>
+                  <span class="t-flag">--tui</span>
+                  <span class="t-comment"># launch interactive studio</span>
+                </div>
+                <div class="term-line">
+                  <span class="t-prompt">$</span>
+                  <span class="t-cmd">npx @stateproof-dev/cli run</span>
+                  <span class="t-comment"># capture proof cards</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA Actions -->
+            <div class="closing-actions">
+              <a href="https://github.com/stateproof/stateproof" target="_blank" rel="noopener noreferrer" class="btn-primary-chartreuse">
+                <span>GITHUB REPOSITORY</span>
+                <span class="arrow">↗</span>
+              </a>
+              <button type="button" class="btn-secondary-mineral copy-trigger" data-copy="npx @stateproof-dev/cli init --url http://localhost:3000 --route /settings">
+                <span>COPY INIT COMMAND</span>
+              </button>
+              <button type="button" class="btn-agent-mineral copy-trigger" data-copy="Setup Stateproof in this repository:&#10;1. Add MCP: npx -y @stateproof-dev/mcp-server&#10;2. Initialize: npx @stateproof-dev/cli init --url http://localhost:3000&#10;3. Generate stateproof.scenarios.json for loading, empty, error, and offline states.&#10;4. Run validation: npx @stateproof-dev/cli run">
+                <svg class="prompt-icon-svg" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M2.5 4.5l4 3.5-4 3.5M8.5 12h5"/>
+                </svg>
+                <span class="btn-label">COPY AGENT PROMPT</span>
+              </button>
+            </div>
+
+            <div class="closing-signoff-quote">
+              <span class="signoff-bullet">■</span>
+              <span><strong>Captured, not guaranteed.</strong> No telemetry, no cloud dependencies.</span>
+            </div>
+          </div>
+
+          <!-- Right Column (5 cols): Live Run Receipt Artifact -->
+          <div class="closing-receipt-col">
+            <div class="sheet stdout-sheet">
+              <div class="sheet-header">
+                <div class="sheet-title-group">
+                  <span class="receipt-pulse-dot"></span>
+                  <span class="sheet-title">stdout // stateproof run</span>
+                </div>
+                <span class="sheet-badge">EXIT 0</span>
+              </div>
+
+              <!-- Terminal Stdout Log -->
+              <div class="stdout-body">
+                <div class="stdout-row stdout-row--init">
+                  <span class="stdout-icon">✔</span>
+                  <span class="stdout-text">CDP browser connected (Chromium 141)</span>
+                </div>
+                <div class="stdout-row stdout-row--init">
+                  <span class="stdout-icon">✔</span>
+                  <span class="stdout-text">Intercepting route: <code class="stdout-code">/account/settings</code></span>
+                </div>
+
+                <div class="stdout-divider"></div>
+
+                <div class="stdout-table-log">
+                  <div class="log-item">
+                    <span class="log-id">01</span>
+                    <span class="log-name">LOADING</span>
+                    <span class="log-detail">3000ms delay</span>
+                    <span class="log-status log-status--pass">PASS</span>
+                  </div>
+                  <div class="log-item">
+                    <span class="log-id">02</span>
+                    <span class="log-name">EMPTY</span>
+                    <span class="log-detail">account-empty.json</span>
+                    <span class="log-status log-status--pass">PASS</span>
+                  </div>
+                  <div class="log-item">
+                    <span class="log-id">03</span>
+                    <span class="log-name">ERROR</span>
+                    <span class="log-detail">HTTP 500 response</span>
+                    <span class="log-status log-status--pass">PASS</span>
+                  </div>
+                  <div class="log-item">
+                    <span class="log-id">04</span>
+                    <span class="log-name">OFFLINE</span>
+                    <span class="log-detail">aborted socket</span>
+                    <span class="log-status log-status--pass">PASS</span>
+                  </div>
+                </div>
+
+                <div class="stdout-divider"></div>
+
+                <div class="stdout-summary">
+                  <div class="summary-line">
+                    <span class="summary-key">RESULT:</span>
+                    <span class="summary-val">4/4 passed (100%) · 0 warnings</span>
+                  </div>
+                  <div class="summary-line">
+                    <span class="summary-key">TIME:</span>
+                    <span class="summary-val">2.84s total · 0 telemetry pings</span>
+                  </div>
+                  <div class="summary-line">
+                    <span class="summary-key">SAVED:</span>
+                    <span class="summary-val"><code>./artifacts/stateproof/01J9ZK84/</code></span>
+                  </div>
+                </div>
+
+                <!-- Verified Stamp Stamp -->
+                <div class="stdout-verified-stamp">
+                  <span class="v-word">VERIFIED</span>
+                  <span class="v-meta">LOCAL ENGINE · EXIT 0</span>
+                </div>
+              </div>
+
+              <div class="sheet-footer">
+                <span class="mono-meta">report: file:///artifacts/report.html</span>
+                <span class="mono-meta">runId: 01J9ZK84</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOLD MINIMAL FOOTER WITH SUBTLE ANIMATED GEOMETRIC GRID -->
+  <footer class="site-footer" id="colophon">
+    <!-- Animated Sharp Laser Grid Background -->
+    <div class="footer-grid-bg" aria-hidden="true">
+      <div class="laser-scanline"></div>
+    </div>
+
+    <div class="footer-container">
+      <div class="footer-main-row">
+        <!-- Big Bold Typographic Wordmark -->
+        <div class="footer-brand-huge">
+          <div class="footer-brand-title">STATEPROOF<span class="dot-accent">.</span></div>
+          <p class="footer-tagline">Precise runtime proof for web applications.</p>
+        </div>
+
+        <!-- Quick Action & Nav Bar -->
+        <div class="footer-actions-cluster">
+          <button type="button" class="footer-cmd-pill copy-trigger" data-copy="npx stateproof run" title="Click to copy run command" aria-label="Copy run command">
+            <span class="pill-prompt">$</span>
+            <span class="pill-code">npx stateproof run</span>
+            <span class="pill-tag">COPY</span>
+          </button>
+          
+          <div class="footer-quick-links">
+            <a href="https://github.com/stateproof/stateproof" target="_blank" rel="noopener noreferrer" class="footer-pill-btn">
+              <span>GitHub</span>
+              <span class="arrow-glyph">↗</span>
+            </a>
+            <a href="#top" class="footer-top-pill" aria-label="Back to top">
+              <span>TOP ↑</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom Seam -->
+      <div class="footer-meta-row">
+        <div class="meta-left">
+          <span class="corner-mark">+</span>
+          <span>MIT License</span>
+          <span class="meta-sep">/</span>
+          <a href="llms.txt" target="_blank" rel="noopener noreferrer" class="footer-meta-link">llms.txt</a>
+          <span class="meta-sep">/</span>
+          <span>Zero Telemetry</span>
+          <span class="meta-sep">/</span>
+          <span>WCAG 2.1 AA</span>
+        </div>
+        <div class="meta-right">
+          <span class="closing-motto">Captured, not guaranteed.</span>
+          <span class="corner-mark">+</span>
+        </div>
+      </div>
+    </div>
+  <!-- GSAP & ScrollTrigger for Scroll Effects -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

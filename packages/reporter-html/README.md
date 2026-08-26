@@ -1,4 +1,4 @@
-# `@stateproof/reporter-html`
+# `@stateproof-dev/reporter-html`
 
 > Standalone, self-contained offline HTML report generator for Stateproof.
 
@@ -28,7 +28,7 @@ report/
 ## Programmatic API
 
 ```ts
-import { writeHtmlReport, renderHtmlReport } from '@stateproof/reporter-html';
+import { writeHtmlReport, renderHtmlReport } from '@stateproof-dev/reporter-html';
 
 const { htmlPath, assetsDir, assetCount } = await writeHtmlReport({
   result: runResult,

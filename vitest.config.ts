@@ -4,7 +4,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
-      '@stateproof-dev/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
+      '@stateproof-dev/core': fileURLToPath(
+        new URL('./packages/core/src/index.ts', import.meta.url),
+      ),
       '@stateproof-dev/playwright-runner': fileURLToPath(
         new URL('./packages/playwright-runner/src/index.ts', import.meta.url),
       ),
@@ -12,7 +14,9 @@ export default defineConfig({
         new URL('./packages/reporter-html/src/index.ts', import.meta.url),
       ),
       '@stateproof-dev/app': fileURLToPath(new URL('./packages/app/src/index.ts', import.meta.url)),
-      '@getstateproof/core': fileURLToPath(new URL('./packages/core/src/index.ts', import.meta.url)),
+      '@getstateproof/core': fileURLToPath(
+        new URL('./packages/core/src/index.ts', import.meta.url),
+      ),
       '@getstateproof/playwright-runner': fileURLToPath(
         new URL('./packages/playwright-runner/src/index.ts', import.meta.url),
       ),
@@ -31,7 +35,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['packages/*/src/**/*.test.ts', 'examples/*/test/**/*.test.ts'],
+    include: ['packages/*/src/**/*.test.ts', 'examples/*/test/**/*.test.ts', 'src/**/*.test.ts'],
     environment: 'node',
     pool: 'forks',
     coverage: {

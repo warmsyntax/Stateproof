@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { StateproofError } from '@stateproof/core';
+import { StateproofError } from '@stateproof-dev/core';
 
 export const LOCK_FILE = '.lock';
 
@@ -10,6 +10,7 @@ const GENERATED_SUFFIXES = ['.png'];
 export interface ArtifactPaths {
   root: string;
   screenshot(scenarioId: string, viewportName: string): string;
+  recoveryScreenshot(scenarioId: string, viewportName: string): string;
   runJson: string;
   traceMd: string;
 }
@@ -18,6 +19,8 @@ export function artifactPaths(rootDir: string): ArtifactPaths {
   return {
     root: rootDir,
     screenshot: (scenarioId, viewportName) => join(rootDir, `${scenarioId}.${viewportName}.png`),
+    recoveryScreenshot: (scenarioId, viewportName) =>
+      join(rootDir, `${scenarioId}.recovered.${viewportName}.png`),
     runJson: join(rootDir, 'run.json'),
     traceMd: join(rootDir, 'trace.md'),
   };

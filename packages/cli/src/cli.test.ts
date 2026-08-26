@@ -1,14 +1,18 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it, afterEach } from 'vitest';
+import type { Scenario, ScenarioFile } from '@stateproof-dev/core';
+import { afterEach, describe, expect, it } from 'vitest';
+import { runExport } from './commands/export.js';
 import { runInit } from './commands/init.js';
 import { runList } from './commands/list.js';
-import { runExport } from './commands/export.js';
-import { resolveSelectedScenarios, resolveSelectedViewports, runSecretAudit } from './commands/run.js';
+import {
+  resolveSelectedScenarios,
+  resolveSelectedViewports,
+  runSecretAudit,
+} from './commands/run.js';
 import { isLoopbackIp, verifyLoopback } from './reachability.js';
 import { formatDuration, renderHumanListSummary } from './reporters/human.js';
-import type { Scenario, ScenarioFile } from '@stateproof/core';
 
 const tempDirs: string[] = [];
 
@@ -54,7 +58,7 @@ describe('reachability & loopback guardrail', () => {
   it('allows remote domains when allowRemote is true', async () => {
     const warnings: string[] = [];
     await expect(
-      verifyLoopback('https://example.com', true, (msg) => warnings.push(msg)),
+      verifyLoopback('https://example.com', true, (msg: string) => warnings.push(msg)),
     ).resolves.toBeUndefined();
   });
 });
@@ -204,7 +208,10 @@ describe('run command filters and secret audit', () => {
       {
         id: 'leaky',
         request: { method: 'GET', urlPattern: '**/api' },
-        response: { mode: 'inline', body: { token: 'sk-1234567890123456789012345678901234567890' } },
+        response: {
+          mode: 'inline',
+          body: { token: 'sk-1234567890123456789012345678901234567890' },
+        },
         expect: { visible: '.token' },
       },
     ];
@@ -235,7 +242,7 @@ describe('export command', () => {
     const runResult = {
       schemaVersion: 1,
       runId: '12345678-1234-1234-1234-123456789012',
-      stateproofVersion: '0.1.0',
+      stateproofVersion: '0.1.3',
       browserVersion: '141',
       startedAt: '2026-08-23T10:00:00.000Z',
       finishedAt: '2026-08-23T10:00:05.000Z',
@@ -272,7 +279,12 @@ describe('human reporter helpers', () => {
       baseUrl: 'http://localhost:5173',
       route: '/',
       scenarios: [
-        { id: 'scen-1', label: 'First', note: 'Primary test', request: { method: 'GET', urlPattern: '**/api' } },
+        {
+          id: 'scen-1',
+          label: 'First',
+          note: 'Primary test',
+          request: { method: 'GET', urlPattern: '**/api' },
+        },
       ],
     });
     expect(summary).toContain('demo-app');

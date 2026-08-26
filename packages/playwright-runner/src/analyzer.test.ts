@@ -1,3 +1,4 @@
+import type { Page } from 'playwright';
 import { describe, expect, it } from 'vitest';
 import { analyzeDomForSelectors } from './analyzer.js';
 
@@ -13,7 +14,7 @@ describe('analyzeDomForSelectors', () => {
           return 0;
         },
       }),
-    } as any;
+    } as unknown as Page;
 
     const report = await analyzeDomForSelectors(mockPage);
     expect(report.selectors).toContain('[data-state="loading"]');
@@ -29,7 +30,7 @@ describe('analyzeDomForSelectors', () => {
           throw new Error('Element not found or page closed');
         },
       }),
-    } as any;
+    } as unknown as Page;
 
     const report = await analyzeDomForSelectors(mockPage);
     expect(report.selectors).toEqual([]);

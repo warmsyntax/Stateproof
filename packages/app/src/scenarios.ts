@@ -3,15 +3,15 @@ import { dirname, join, resolve } from 'node:path';
 import {
   DEFAULT_VIEWPORTS,
   parseScenarioText,
-  scanTextForSecrets,
-  scanValueForSecrets,
-  StateproofError,
-  validateScenarioShape,
-  validateSemantics,
   type Scenario,
   type ScenarioFile,
+  StateproofError,
+  scanTextForSecrets,
+  scanValueForSecrets,
   type Viewport,
-} from '@stateproof/core';
+  validateScenarioShape,
+  validateSemantics,
+} from '@stateproof-dev/core';
 import pc from 'picocolors';
 
 export function loadAndValidateScenarioFile(filePath: string): {
@@ -125,18 +125,29 @@ export function runSecretAudit(
   const findings: Array<{ scenarioId: string; finding: string }> = [];
 
   for (const scenario of scenarios) {
-    if (scenario.response.mode === 'inline') {
-      const issues = scanValueForSecrets(scenario.response.body);
-      for (const iss of issues) {
-        findings.push({ scenarioId: scenario.id, finding: `inline body contains ${iss.kind}: ${iss.detail}` });
-      }
-    } else if (scenario.response.mode === 'fixture') {
-      const fixturePath = join(baseDir, scenario.response.path);
-      if (existsSync(fixturePath)) {
-        const content = readFileSync(fixturePath, 'utf-8');
-        const issues = scanTextForSecrets(content);
+    const responsesToCheck = [scenario.response, scenario.recovery?.response].filter(
+      (r): r is NonNullable<typeof r> => r !== undefined,
+    );
+    for (const resp of responsesToCheck) {
+      if (resp.mode === 'inline') {
+        const issues = scanValueForSecrets(resp.body);
         for (const iss of issues) {
-          findings.push({ scenarioId: scenario.id, finding: `fixture ${scenario.response.path} contains ${iss.kind}: ${iss.detail}` });
+          findings.push({
+            scenarioId: scenario.id,
+            finding: `inline body contains ${iss.kind}: ${iss.detail}`,
+          });
+        }
+      } else if (resp.mode === 'fixture') {
+        const fixturePath = join(baseDir, resp.path);
+        if (existsSync(fixturePath)) {
+          const content = readFileSync(fixturePath, 'utf-8');
+          const issues = scanTextForSecrets(content);
+          for (const iss of issues) {
+            findings.push({
+              scenarioId: scenario.id,
+              finding: `fixture ${resp.path} contains ${iss.kind}: ${iss.detail}`,
+            });
+          }
         }
       }
     }
@@ -153,7 +164,7 @@ export function runSecretAudit(
       stderr(
         pc.yellow(
           `warning: potential secret(s) detected in scenarios (run with --strict-secrets to fail):\n` +
-          findings.map((f) => `  • [${f.scenarioId}] ${f.finding}`).join('\n'),
+            findings.map((f) => `  • [${f.scenarioId}] ${f.finding}`).join('\n'),
         ),
       );
     }

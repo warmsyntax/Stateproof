@@ -1,6 +1,6 @@
 import { promises as dns } from 'node:dns';
 import { isIP } from 'node:net';
-import { StateproofError } from '@stateproof/core';
+import { StateproofError } from '@stateproof-dev/core';
 
 export const LOOPBACK_HOSTS = new Set(['127.0.0.1', '::1', '[::1]', 'localhost']);
 
@@ -53,7 +53,9 @@ export async function verifyLoopback(
         hint: 'Pass --allow-remote to permit testing against remote or external hosts.',
       });
     }
-    stderr(`warning: baseUrl "${baseUrl}" is non-loopback; proceeding because --allow-remote is enabled`);
+    stderr(
+      `warning: baseUrl "${baseUrl}" is non-loopback; proceeding because --allow-remote is enabled`,
+    );
     return;
   }
 

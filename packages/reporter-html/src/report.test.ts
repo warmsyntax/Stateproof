@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { RunResult } from '@stateproof/core';
+import type { RunResult, ScenarioOutcome } from '@stateproof-dev/core';
 import { afterEach, describe, expect, it } from 'vitest';
 import { escapeHtml } from './escape.js';
 import { renderHtmlReport } from './render.js';
@@ -26,8 +26,8 @@ afterEach(() => {
 
 const sampleResult: RunResult = {
   schemaVersion: 1,
-  runId: '11111111-2222-3333-4444-555555555555',
-  stateproofVersion: '0.1.0',
+  runId: 'html-report-run-123',
+  stateproofVersion: '0.1.3',
   browserVersion: '141',
   startedAt: '2026-08-23T14:02:00.000Z',
   finishedAt: '2026-08-23T14:02:10.000Z',
@@ -196,14 +196,18 @@ describe('writeHtmlReport', () => {
     writeFileSync(join(artifactDir, 'account-loading.mobile.png'), 'fake-png-2', 'utf-8');
     writeFileSync(join(artifactDir, 'account-error.desktop.png'), 'fake-png-3', 'utf-8');
     writeFileSync(join(artifactDir, 'account-error.mobile.png'), 'fake-png-4', 'utf-8');
-    writeFileSync(join(artifactDir, 'account-loading.desktop.baseline.png'), 'fake-baseline', 'utf-8');
+    writeFileSync(
+      join(artifactDir, 'account-loading.desktop.baseline.png'),
+      'fake-baseline',
+      'utf-8',
+    );
     writeFileSync(join(artifactDir, 'account-loading.desktop.diff.png'), 'fake-diff', 'utf-8');
 
     const resultWithDiff: RunResult = {
       ...sampleResult,
       scenarios: [
         {
-          ...sampleResult.scenarios[0]!,
+          ...(sampleResult.scenarios[0] as ScenarioOutcome),
           visualDiff: {
             baseline: 'account-loading.desktop.baseline.png',
             diff: 'account-loading.desktop.diff.png',
@@ -227,5 +231,25 @@ describe('writeHtmlReport', () => {
     const writtenHtml = readFileSync(result.htmlPath, 'utf-8');
     expect(writtenHtml).toContain('Stateproof Report');
     expect(writtenHtml).toContain('account-loading.desktop.png');
+  });
+
+  it('renders aborted status and custom scenario route in HTML report', () => {
+    const resultWithRouteAndAborted: RunResult = {
+      ...sampleResult,
+      scenarios: [
+        {
+          id: 'checkout-flow',
+          label: 'Checkout Flow',
+          route: '/checkout',
+          viewport: { name: 'desktop', width: 1440, height: 1024 },
+          status: 'aborted',
+          artifacts: {},
+          durationMs: 0,
+        },
+      ],
+    };
+    const html = renderHtmlReport(resultWithRouteAndAborted);
+    expect(html).toContain('ABORTED');
+    expect(html).toContain('/checkout');
   });
 });

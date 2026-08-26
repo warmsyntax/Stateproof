@@ -57,18 +57,41 @@ export type ResponseRule =
   | OfflineResponse;
 
 export interface ExpectRule {
-  visible: string | string[];
+  visible?: string | string[] | undefined;
+  hidden?: string | string[] | undefined;
+  text?: Record<string, string> | undefined;
+  attributes?: Record<string, Record<string, string | boolean>> | undefined;
   timeoutMs?: number | undefined;
   stableMs?: number | undefined;
+}
+
+export interface RecoveryAction {
+  type: 'click';
+  selector: string;
+}
+
+export interface RecoveryRule {
+  action: RecoveryAction;
+  response: ResponseRule;
+  expect: ExpectRule;
+}
+
+export interface WebSocketRule {
+  urlPattern: string;
+  mode: 'drop-connection' | 'close';
+  afterMs?: number | undefined;
 }
 
 export interface Scenario {
   id: string;
   label?: string | undefined;
   note?: string | undefined;
-  request: RequestRule;
-  response: ResponseRule;
+  route?: string | undefined;
+  request?: RequestRule | undefined;
+  response?: ResponseRule | undefined;
+  websocket?: WebSocketRule | undefined;
   expect: ExpectRule;
+  recovery?: RecoveryRule | undefined;
 }
 
 export interface ScenarioFile {
@@ -103,10 +126,18 @@ export const FAILURE_CODES = [
   'artifact-locked',
   'internal-error',
   'visual-diff-exceeded',
+  'recovery-action-failed',
+  'recovery-timeout',
+  'text-mismatch',
+  'attribute-mismatch',
+  'element-not-hidden',
+  'websocket-not-intercepted',
   'unknown',
 ] as const;
 
 export type FailureCode = (typeof FAILURE_CODES)[number];
+
+export type ScenarioStatus = 'passed' | 'failed' | 'error' | 'aborted';
 
 export interface ScenarioVisualDiff {
   baseline?: string | undefined;
@@ -116,20 +147,31 @@ export interface ScenarioVisualDiff {
   threshold?: number | undefined;
 }
 
+export interface RecoveryOutcome {
+  status: 'passed' | 'failed';
+  durationMs: number;
+  screenshot?: string | undefined;
+}
+
 export interface ScenarioOutcome {
   id: string;
   label?: string | undefined;
+  route?: string | undefined;
   viewport: Viewport;
-  status: 'passed' | 'failed' | 'error';
+  status: ScenarioStatus;
   failureCode?: FailureCode | undefined;
   message?: string | undefined;
   hint?: string | undefined;
-  suggestions?: {
-    selectors: string[];
-  } | undefined;
+  suggestions?:
+    | {
+        selectors: string[];
+      }
+    | undefined;
   visualDiff?: ScenarioVisualDiff | undefined;
+  recovery?: RecoveryOutcome | undefined;
   artifacts: {
     screenshot?: string | undefined;
+    recoveryScreenshot?: string | undefined;
   };
   durationMs: number;
 }

@@ -1,9 +1,18 @@
 {
   "name": "@stateproof-dev/playwright-runner",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "Browser execution engine: interception, selector waits, and capture for Stateproof",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/warmsyntax/Stateproof.git",
+    "directory": "packages/playwright-runner"
+  },
+  "homepage": "https://stateproof.dev",
+  "bugs": {
+    "url": "https://github.com/warmsyntax/Stateproof/issues"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

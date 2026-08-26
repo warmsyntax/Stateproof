@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
 
@@ -31,7 +31,7 @@ function App() {
 
   useEffect(() => {
     let alive = true;
-    record('loading');
+    record(`loading:${attempt}`);
     loadAccount()
       .then((payload) => {
         if (!alive) return;

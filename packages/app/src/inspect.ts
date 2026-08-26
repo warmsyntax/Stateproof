@@ -1,6 +1,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { buildEnvelope, StateproofError, type Envelope, type RunResult, type ScenarioOutcome, type ScenarioVisualDiff } from '@stateproof/core';
+import {
+  buildEnvelope,
+  type Envelope,
+  type RunResult,
+  type ScenarioOutcome,
+  type ScenarioStatus,
+  type ScenarioVisualDiff,
+  StateproofError,
+} from '@stateproof-dev/core';
 import { resolveArtifactDirectory } from './export.js';
 
 export interface InspectFailureOptions {
@@ -14,7 +22,7 @@ export interface FailureInspectionData {
   runId: string;
   scenarioId: string;
   viewport: string;
-  status: 'passed' | 'failed' | 'error';
+  status: ScenarioStatus;
   failureCode?: string | undefined;
   message?: string | undefined;
   hint?: string | undefined;
@@ -59,7 +67,8 @@ export async function inspectFailure(options: InspectFailureOptions): Promise<Ap
     matchedOutcome = scenarios.find((s) => s.viewport.name === options.viewport);
   } else {
     // Pick the first failed/error scenario
-    matchedOutcome = scenarios.find((s) => s.status === 'failed' || s.status === 'error') ?? scenarios[0];
+    matchedOutcome =
+      scenarios.find((s) => s.status === 'failed' || s.status === 'error') ?? scenarios[0];
   }
 
   if (!matchedOutcome) {

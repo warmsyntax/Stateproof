@@ -1,4 +1,4 @@
-import type { RunResult, ScenarioOutcome, Viewport } from '@stateproof/core';
+import type { RunResult, ScenarioOutcome, Viewport } from '@stateproof-dev/core';
 import { escapeHtml } from './escape.js';
 import { INLINE_REPORT_STYLES } from './styles.js';
 
@@ -15,6 +15,8 @@ function renderBadge(status: ScenarioOutcome['status']): string {
       return '<span class="sp-badge sp-badge-fail" aria-label="Failed">× FAIL</span>';
     case 'error':
       return '<span class="sp-badge sp-badge-error" aria-label="Error">! ERROR</span>';
+    case 'aborted':
+      return '<span class="sp-badge" style="color:var(--sp-text-faint);border-color:var(--sp-border-subtle)" aria-label="Aborted">⊘ ABORTED</span>';
   }
 }
 
@@ -23,10 +25,15 @@ export function renderHtmlReport(result: RunResult): string {
   const passedCount = scenarios.filter((s: ScenarioOutcome) => s.status === 'passed').length;
   const failedCount = scenarios.filter((s: ScenarioOutcome) => s.status === 'failed').length;
   const errorCount = scenarios.filter((s: ScenarioOutcome) => s.status === 'error').length;
-  const totalDuration = scenarios.reduce((acc: number, s: ScenarioOutcome) => acc + s.durationMs, 0);
+  const totalDuration = scenarios.reduce(
+    (acc: number, s: ScenarioOutcome) => acc + s.durationMs,
+    0,
+  );
 
   // Group scenarios and viewports
-  const uniqueScenarioIds: string[] = Array.from(new Set(scenarios.map((s: ScenarioOutcome) => s.id)));
+  const uniqueScenarioIds: string[] = Array.from(
+    new Set(scenarios.map((s: ScenarioOutcome) => s.id)),
+  );
   const uniqueViewports: Viewport[] = Array.from(
     new Map(scenarios.map((s: ScenarioOutcome) => [s.viewport.name, s.viewport])).values(),
   );
@@ -38,7 +45,9 @@ export function renderHtmlReport(result: RunResult): string {
   }
 
   // Failures for failure details section
-  const failedScenarios = scenarios.filter((s: ScenarioOutcome) => s.status === 'failed' || s.status === 'error');
+  const failedScenarios = scenarios.filter(
+    (s: ScenarioOutcome) => s.status === 'failed' || s.status === 'error',
+  );
 
   // Matrix table header
   const tableHeaders = uniqueViewports
@@ -53,11 +62,15 @@ export function renderHtmlReport(result: RunResult): string {
     .map((scenarioId: string) => {
       const firstOutcome = scenarios.find((s: ScenarioOutcome) => s.id === scenarioId);
       const label = firstOutcome?.label ?? scenarioId;
+      const routeBadge = firstOutcome?.route
+        ? `<div class="sp-scenario-route" style="font-family:monospace;font-size:11px;color:var(--sp-text-faint);margin-top:2px">${escapeHtml(firstOutcome.route)}</div>`
+        : '';
 
       const cells = uniqueViewports
         .map((viewport: Viewport) => {
           const outcome = outcomeMap.get(`${scenarioId}:${viewport.name}`);
-          if (!outcome) return '<td><span class="sp-badge" style="color:var(--sp-text-faint)">—</span></td>';
+          if (!outcome)
+            return '<td><span class="sp-badge" style="color:var(--sp-text-faint)">—</span></td>';
           return `<td>${renderBadge(outcome.status)}</td>`;
         })
         .join('\n            ');
@@ -66,6 +79,7 @@ export function renderHtmlReport(result: RunResult): string {
           <th scope="row" class="sp-scenario-cell">
             <div class="sp-scenario-id">${escapeHtml(label)}</div>
             ${firstOutcome?.label && firstOutcome.label !== scenarioId ? `<div class="sp-scenario-note">${escapeHtml(scenarioId)}</div>` : ''}
+            ${routeBadge}
           </th>
           ${cells}
         </tr>`;
@@ -76,7 +90,14 @@ export function renderHtmlReport(result: RunResult): string {
   const galleryCards = scenarios
     .map((outcome: ScenarioOutcome) => {
       const screenshot = outcome.artifacts.screenshot;
+      const recScreenshot = outcome.artifacts.recoveryScreenshot;
       const altText = `${escapeHtml(outcome.label ?? outcome.id)} on ${escapeHtml(outcome.viewport.name)} viewport (${outcome.viewport.width}x${outcome.viewport.height}) - status: ${outcome.status}`;
+      const recoveryBadge = outcome.recovery
+        ? outcome.recovery.status === 'passed'
+          ? ' <span class="sp-badge sp-badge-pass" style="font-size:10px;padding:2px 6px">✓ RECOVERED</span>'
+          : ' <span class="sp-badge sp-badge-fail" style="font-size:10px;padding:2px 6px">× RECOVERY FAILED</span>'
+        : '';
+
       return `
       <div class="sp-screenshot-card" tabindex="0">
         <div class="sp-screenshot-frame">
@@ -85,11 +106,19 @@ export function renderHtmlReport(result: RunResult): string {
               ? `<img src="assets/${escapeHtml(screenshot)}" alt="${altText}" class="sp-screenshot-img" loading="lazy" />`
               : `<span class="sp-text-muted" style="font-family:var(--sp-font-mono);font-size:13px">No screenshot captured</span>`
           }
+          ${
+            recScreenshot
+              ? `<div style="margin-top:8px;border-top:1px dashed var(--sp-border);padding-top:8px">
+                   <div style="font-size:11px;font-weight:600;margin-bottom:4px;color:var(--sp-accent)">RECOVERED STATE</div>
+                   <img src="assets/${escapeHtml(recScreenshot)}" alt="${altText} (Recovered)" class="sp-screenshot-img" loading="lazy" />
+                 </div>`
+              : ''
+          }
         </div>
         <div class="sp-screenshot-caption">
           <div class="sp-caption-top">
             <span class="sp-caption-id">${escapeHtml(outcome.id)}</span>
-            ${renderBadge(outcome.status)}
+            ${renderBadge(outcome.status)}${recoveryBadge}
           </div>
           <div class="sp-caption-meta">
             <span>${escapeHtml(outcome.viewport.name)} (${outcome.viewport.width}×${outcome.viewport.height})</span>
@@ -226,9 +255,12 @@ ${INLINE_REPORT_STYLES}
         ${scenarios
           .filter((s: ScenarioOutcome) => s.visualDiff !== undefined)
           .map((s: ScenarioOutcome) => {
-            const vd = s.visualDiff!;
-            const diffPercent = vd.diffRatio !== undefined ? `${(vd.diffRatio * 100).toFixed(2)}%` : '—';
-            const thresholdPercent = vd.threshold !== undefined ? `${(vd.threshold * 100).toFixed(2)}%` : '0.10%';
+            const vd = s.visualDiff;
+            if (!vd) return '';
+            const diffPercent =
+              vd.diffRatio !== undefined ? `${(vd.diffRatio * 100).toFixed(2)}%` : '—';
+            const thresholdPercent =
+              vd.threshold !== undefined ? `${(vd.threshold * 100).toFixed(2)}%` : '0.10%';
             return `
           <div class="sp-diff-card">
             <div class="sp-diff-header">

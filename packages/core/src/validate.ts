@@ -93,8 +93,9 @@ export function bodySerializationProblem(body: unknown): string | null {
 
 const SELECTOR_PREFIXES_REQUIRING_RUNTIME_FEATURES = ['text=', 'xpath=', '//'];
 
-function selectorProblems(visible: string | string[]): string[] {
-  const selectors = Array.isArray(visible) ? visible : [visible];
+function selectorProblems(selectorsInput?: string | string[] | undefined): string[] {
+  if (!selectorsInput) return [];
+  const selectors = Array.isArray(selectorsInput) ? selectorsInput : [selectorsInput];
   return selectors.filter((selector) =>
     SELECTOR_PREFIXES_REQUIRING_RUNTIME_FEATURES.some((prefix) => selector.startsWith(prefix)),
   );
@@ -147,53 +148,125 @@ export function collectSemanticIssues(file: ScenarioFile): SemanticIssue[] {
   }
 
   for (const scenario of file.scenarios) {
-    const { urlPattern } = scenario.request;
-    if (isCrossOriginPattern(urlPattern)) {
-      issues.push({
-        code: 'PATTERN_CROSS_ORIGIN',
-        message: `Scenario "${scenario.id}": urlPattern must be a path glob and cannot start with http:// or https://.`,
-        hint: `Use a pathname glob such as "**/api/account"; the origin comes from baseUrl.`,
-      });
-      continue;
-    }
-    if (isBroadPattern(urlPattern)) {
-      issues.push({
-        code: 'PATTERN_TOO_BROAD',
-        message: `Scenario "${scenario.id}": urlPattern "${urlPattern}" matches everything.`,
-        hint: 'Narrow the pattern to a real API path prefix such as "**/api/**".',
-      });
-    }
-
-    if (scenario.response.mode === 'fixture' && isForbiddenFixturePath(scenario.response.path)) {
-      issues.push({
-        code: 'FIXTURE_PATH_FORBIDDEN',
-        message: `Scenario "${scenario.id}": fixture path "${scenario.response.path}" is absolute or escapes the scenario directory.`,
-        hint: 'Use a relative path inside the scenario file directory, e.g. "fixtures/account-empty.json".',
-      });
-    }
-
-    if (scenario.response.mode === 'inline') {
-      const problem = bodySerializationProblem(scenario.response.body);
-      if (problem) {
+    if (scenario.route) {
+      if (!scenario.route.startsWith('/') || scenario.route.startsWith('//')) {
         issues.push({
-          code: 'BODY_NOT_SERIALIZABLE',
-          message: `Scenario "${scenario.id}": inline body ${problem}.`,
-          hint: 'Inline bodies must be JSON-serializable data no larger than 1 MB.',
-        });
-      }
-    }
-    if (scenario.response.mode === 'error' && scenario.response.body !== undefined) {
-      const problem = bodySerializationProblem(scenario.response.body);
-      if (problem) {
-        issues.push({
-          code: 'BODY_NOT_SERIALIZABLE',
-          message: `Scenario "${scenario.id}": error body ${problem}.`,
-          hint: 'Error bodies must be JSON-serializable data.',
+          code: 'SCHEMA_INVALID',
+          message: `Scenario "${scenario.id}": route "${scenario.route}" must start with a single "/" and cannot be protocol-relative.`,
+          hint: 'Use a path such as "/checkout" or "/search?q=test".',
         });
       }
     }
 
-    const badSelectors = selectorProblems(scenario.expect.visible);
+    if (scenario.request) {
+      const { urlPattern } = scenario.request;
+      if (isCrossOriginPattern(urlPattern)) {
+        issues.push({
+          code: 'PATTERN_CROSS_ORIGIN',
+          message: `Scenario "${scenario.id}": urlPattern must be a path glob and cannot start with http:// or https://.`,
+          hint: `Use a pathname glob such as "**/api/account"; the origin comes from baseUrl.`,
+        });
+      } else if (isBroadPattern(urlPattern)) {
+        issues.push({
+          code: 'PATTERN_TOO_BROAD',
+          message: `Scenario "${scenario.id}": urlPattern "${urlPattern}" matches everything.`,
+          hint: 'Narrow the pattern to a real API path prefix such as "**/api/**".',
+        });
+      }
+    }
+
+    if (scenario.websocket) {
+      const { urlPattern } = scenario.websocket;
+      if (isBroadPattern(urlPattern)) {
+        issues.push({
+          code: 'PATTERN_TOO_BROAD',
+          message: `Scenario "${scenario.id}": websocket urlPattern "${urlPattern}" matches everything.`,
+          hint: 'Narrow the pattern to a real socket path prefix such as "**/ws/**".',
+        });
+      }
+    }
+
+    if (scenario.response) {
+      if (scenario.response.mode === 'fixture' && isForbiddenFixturePath(scenario.response.path)) {
+        issues.push({
+          code: 'FIXTURE_PATH_FORBIDDEN',
+          message: `Scenario "${scenario.id}": fixture path "${scenario.response.path}" is absolute or escapes the scenario directory.`,
+          hint: 'Use a relative path inside the scenario file directory, e.g. "fixtures/account-empty.json".',
+        });
+      }
+
+      if (scenario.response.mode === 'inline') {
+        const problem = bodySerializationProblem(scenario.response.body);
+        if (problem) {
+          issues.push({
+            code: 'BODY_NOT_SERIALIZABLE',
+            message: `Scenario "${scenario.id}": inline body ${problem}.`,
+            hint: 'Inline bodies must be JSON-serializable data no larger than 1 MB.',
+          });
+        }
+      }
+
+      if (scenario.response.mode === 'error' && scenario.response.body !== undefined) {
+        const problem = bodySerializationProblem(scenario.response.body);
+        if (problem) {
+          issues.push({
+            code: 'BODY_NOT_SERIALIZABLE',
+            message: `Scenario "${scenario.id}": error body ${problem}.`,
+            hint: 'Error bodies must be JSON-serializable data.',
+          });
+        }
+      }
+    }
+
+    if (scenario.recovery) {
+      if (
+        scenario.recovery.response.mode === 'fixture' &&
+        isForbiddenFixturePath(scenario.recovery.response.path)
+      ) {
+        issues.push({
+          code: 'FIXTURE_PATH_FORBIDDEN',
+          message: `Scenario "${scenario.id}" recovery: fixture path "${scenario.recovery.response.path}" is absolute or escapes the scenario directory.`,
+          hint: 'Use a relative path inside the scenario file directory.',
+        });
+      }
+
+      if (scenario.recovery.response.mode === 'inline') {
+        const problem = bodySerializationProblem(scenario.recovery.response.body);
+        if (problem) {
+          issues.push({
+            code: 'BODY_NOT_SERIALIZABLE',
+            message: `Scenario "${scenario.id}" recovery: inline body ${problem}.`,
+            hint: 'Inline bodies must be JSON-serializable data.',
+          });
+        }
+      }
+
+      const actionSelectorBad = selectorProblems(scenario.recovery.action.selector);
+      for (const selector of actionSelectorBad) {
+        issues.push({
+          code: 'SCHEMA_INVALID',
+          message: `Scenario "${scenario.id}" recovery action: selector "${selector}" uses non-CSS syntax.`,
+          hint: 'v0.1 supports CSS selectors only.',
+        });
+      }
+    }
+
+    const allSelectorsToCheck = [
+      ...(scenario.expect.visible
+        ? Array.isArray(scenario.expect.visible)
+          ? scenario.expect.visible
+          : [scenario.expect.visible]
+        : []),
+      ...(scenario.expect.hidden
+        ? Array.isArray(scenario.expect.hidden)
+          ? scenario.expect.hidden
+          : [scenario.expect.hidden]
+        : []),
+      ...(scenario.expect.text ? Object.keys(scenario.expect.text) : []),
+      ...(scenario.expect.attributes ? Object.keys(scenario.expect.attributes) : []),
+    ];
+
+    const badSelectors = selectorProblems(allSelectorsToCheck);
     for (const selector of badSelectors) {
       issues.push({
         code: 'SCHEMA_INVALID',

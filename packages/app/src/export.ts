@@ -3,14 +3,14 @@ import { basename, join, resolve } from 'node:path';
 import {
   buildEnvelope,
   buildJsonCard,
+  type Envelope,
   jsonCardEnvelope,
   parseScenarioText,
-  renderMarkdownCard,
-  scenarioFileSchema,
-  StateproofError,
-  type Envelope,
   type RunResult,
-} from '@stateproof/core';
+  renderMarkdownCard,
+  StateproofError,
+  scenarioFileSchema,
+} from '@stateproof-dev/core';
 
 export interface AppExportOptions {
   run?: string | undefined;

@@ -1,12 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  executeExport,
-  resolveArtifactDirectory,
-  type AppExportOptions,
-} from '@stateproof/app';
-import { StateproofError, type RunResult } from '@stateproof/core';
-import { renderHtmlReport } from '@stateproof/reporter-html';
+import { executeExport, resolveArtifactDirectory } from '@stateproof-dev/app';
+import { type RunResult, StateproofError } from '@stateproof-dev/core';
+import { renderHtmlReport } from '@stateproof-dev/reporter-html';
 
 export interface ExportCommandOptions {
   run?: string | undefined;
