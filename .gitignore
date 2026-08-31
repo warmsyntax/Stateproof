@@ -24,3 +24,6 @@ skills-lock.json
 # OS generated files
 .DS_Store
 Thumbs.db
+upgraded_design_stateproof/ 
+docs/
+landing-site/
