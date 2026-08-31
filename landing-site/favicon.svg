@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Stateproof Icon</title>
   <rect width="64" height="64" rx="14" fill="#0D141F"/>
   <!-- Top-Left: State 01 Loading (Blue) -->
   <rect x="10" y="10" width="20" height="20" rx="3" fill="#1864F6"/>

@@ -1,8 +1,11 @@
 {
   "name": "@stateproof-dev/mcp-server",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Model Context Protocol (MCP) server bridge for Stateproof frontend state validation",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "repository": {
     "type": "git",

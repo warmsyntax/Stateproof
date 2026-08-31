@@ -7,6 +7,7 @@ import {
   type Envelope,
   type RunResult,
   renderMarkdownCard,
+  STATEPROOF_VERSION,
   StateproofError,
 } from '@stateproof-dev/core';
 import { type RunFatal, runScenarios } from '@stateproof-dev/playwright-runner';
@@ -38,6 +39,7 @@ export interface AppRunOptions {
   diff?: boolean | undefined;
   baselineDir?: string | undefined;
   diffThreshold?: number | undefined;
+  workers?: number | undefined;
   skipNetworkCheck?: boolean | undefined;
   stateproofVersion?: string | undefined;
 }
@@ -99,7 +101,7 @@ export async function executeRun(options: AppRunOptions): Promise<AppRunResult> 
     file,
     scenarioFilePath: absolutePath,
     baseUrl: effectiveBaseUrl,
-    stateproofVersion: options.stateproofVersion ?? '0.1.3',
+    stateproofVersion: options.stateproofVersion ?? STATEPROOF_VERSION,
     allowThirdParty: options.allowThirdParty,
     browserChannel: options.browserChannel,
     cdpUrl: options.cdpUrl,
@@ -111,6 +113,7 @@ export async function executeRun(options: AppRunOptions): Promise<AppRunResult> 
     diff: options.diff,
     baselineDir: options.baselineDir,
     diffThreshold: options.diffThreshold,
+    workers: options.workers,
     selectedScenarioIds: selectedScenarios.map((s) => s.id),
     selectedViewportNames: selectedViewports.map((v) => v.name),
   });

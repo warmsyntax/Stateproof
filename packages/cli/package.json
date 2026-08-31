@@ -1,8 +1,11 @@
 {
   "name": "@stateproof-dev/cli",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Stateproof command line: init, run, list, export",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "repository": {
     "type": "git",

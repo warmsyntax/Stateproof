@@ -14,7 +14,7 @@ const EXAMPLE_ROOT = fileURLToPath(
   new URL('../../../../examples/react-vite-demo', import.meta.url),
 );
 const SCENARIO_FILE_NAME = 'stateproof.scenarios.json';
-const EMPTY_FIXTURE = '{"account":null}\n';
+const EMPTY_FIXTURE = '{\n  "account": null\n}\n';
 
 let vite: ViteDevServer;
 let beacon: Server;
@@ -54,7 +54,11 @@ function single(
   overrides?: Partial<ScenarioFile>,
 ): ScenarioFile {
   const file = scenarioFile({ ...overrides, scenarios: [scenario] });
-  writeFileSync(join(EXAMPLE_ROOT, SCENARIO_FILE_NAME), JSON.stringify(file, null, 2), 'utf-8');
+  writeFileSync(
+    join(EXAMPLE_ROOT, SCENARIO_FILE_NAME),
+    `${JSON.stringify(file, null, 2)}\n`,
+    'utf-8',
+  );
   return file;
 }
 
@@ -108,7 +112,12 @@ beforeAll(async () => {
   vite = await createViteServer({
     root: EXAMPLE_ROOT,
     logLevel: 'silent',
-    server: { strictPort: false },
+    server: {
+      strictPort: false,
+      watch: {
+        ignored: ['**/stateproof.scenarios.json', '**/fixtures/**', '**/artifacts/**', '**/.lock'],
+      },
+    },
   });
   await vite.listen();
   const local = vite.resolvedUrls?.local[0];

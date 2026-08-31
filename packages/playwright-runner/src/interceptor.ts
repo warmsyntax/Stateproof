@@ -96,7 +96,10 @@ async function applyScenarioRule(
 
 // One catch-all handler per page (contract §6.3). Every code path resolves the
 // route exactly once; the only intentionally unresolved route is a held `delay`.
-export function installInterceptor(page: Page, options: InterceptorOptions): InterceptorHandle {
+export async function installInterceptor(
+  page: Page,
+  options: InterceptorOptions,
+): Promise<InterceptorHandle> {
   let currentRule = options.rule;
   let currentResponse = options.response;
   let currentFixtureBytes = options.fixtureBytes;
@@ -151,7 +154,7 @@ export function installInterceptor(page: Page, options: InterceptorOptions): Int
     }
   };
 
-  void page.route('**/*', handle).catch(() => {});
+  await page.route('**/*', handle);
 
   return {
     interceptedOnce: () => interceptedAtMs !== null,

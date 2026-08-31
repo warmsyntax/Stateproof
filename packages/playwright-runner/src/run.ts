@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpus } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import {
   assertFixtureContent,
@@ -22,7 +23,11 @@ import {
   releaseLock,
 } from './artifacts.js';
 import { runVisualDiff } from './diff.js';
-import { installInterceptor, installWebSocketInterceptor } from './interceptor.js';
+import {
+  type InterceptorHandle,
+  installInterceptor,
+  installWebSocketInterceptor,
+} from './interceptor.js';
 import {
   AttributeMismatchError,
   ElementNotHiddenError,
@@ -57,6 +62,7 @@ export interface RunOptions {
   diff?: boolean | undefined;
   baselineDir?: string | undefined;
   diffThreshold?: number | undefined;
+  workers?: number | undefined;
 }
 
 export type FatalKind = 'usage' | 'environment' | 'internal';
@@ -235,9 +241,9 @@ async function executeCombo(args: ComboArgs): Promise<ComboResult> {
     const page = await context.newPage();
     const origin = new URL(baseUrl).origin;
 
-    let interceptor: ReturnType<typeof installInterceptor> | null = null;
+    let interceptor: InterceptorHandle | null = null;
     if (scenario.request && scenario.response) {
-      interceptor = installInterceptor(page, {
+      interceptor = await installInterceptor(page, {
         baseUrlOrigin: origin,
         rule: scenario.request,
         response: scenario.response,
@@ -698,7 +704,7 @@ export async function runScenarios(options: RunOptions): Promise<RunOutput> {
       // Strategy 2: Auto-detect system browser channels or launch managed chromium
       const channelsToTry: Array<string | undefined> = options.browserChannel
         ? [options.browserChannel]
-        : ['chrome', 'msedge', undefined];
+        : [undefined, 'chrome', 'msedge'];
 
       let lastLaunchError: unknown = null;
       for (const channel of channelsToTry) {
@@ -734,6 +740,8 @@ export async function runScenarios(options: RunOptions): Promise<RunOutput> {
       }
     }
 
+    const activeBrowser = browser;
+
     const pairs: Array<{ scenario: Scenario; viewport: Viewport }> = [];
     for (const scenario of scenarios) {
       for (const viewport of viewports) {
@@ -741,107 +749,161 @@ export async function runScenarios(options: RunOptions): Promise<RunOutput> {
       }
     }
 
-    const abortRemaining = (fromIndex: number) => {
-      for (const rem of pairs.slice(fromIndex)) {
+    interface IndexedResult {
+      index: number;
+      outcome: ScenarioOutcome;
+      trace?: string | undefined;
+      fatal?: RunFatal | undefined;
+    }
+
+    const results: Array<IndexedResult | undefined> = new Array(pairs.length);
+    let nextIndex = 0;
+    let isAborted = false;
+
+    const concurrency = Math.max(1, options.workers ?? Math.min(4, cpus()?.length || 1));
+
+    async function worker(): Promise<void> {
+      while (true) {
+        if (isAborted) break;
+        const i = nextIndex++;
+        if (i >= pairs.length) break;
+
+        const currentPair = pairs[i];
+        if (!currentPair) break;
+        const { scenario, viewport } = currentPair;
+
+        const effectiveTimeout =
+          scenario.expect.timeoutMs ?? options.timeoutMsOverride ?? options.failureBudgetMs ?? 5000;
+        const budget = effectiveTimeout + WATCHDOG_GRACE_MS + DEFAULT_TIMEOUT_MS;
+
+        const comboPromise = executeCombo({
+          browser: activeBrowser,
+          baseUrl: options.baseUrl,
+          route: options.file.route,
+          scenarioName: options.file.name,
+          scenario,
+          viewport,
+          timeoutMs: effectiveTimeout,
+          allowThirdParty: options.allowThirdParty ?? false,
+          paths,
+          scenarioFilePath: options.scenarioFilePath,
+          updateBaselines: options.updateBaselines,
+          diff: options.diff,
+          baselineDir: options.baselineDir,
+          diffThreshold: options.diffThreshold,
+        });
+
+        let combo: ComboResult;
+        try {
+          combo = await Promise.race([
+            comboPromise,
+            sleep(budget).then(() => {
+              throw new Error(`watchdog: scenario exceeded ${budget}ms budget`);
+            }),
+          ]);
+        } catch (watchdogError) {
+          const detail =
+            watchdogError instanceof Error ? watchdogError.message : String(watchdogError);
+          results[i] = {
+            index: i,
+            outcome: {
+              id: scenario.id,
+              ...(scenario.label === undefined ? {} : { label: scenario.label }),
+              route: scenario.route ?? options.file.route,
+              viewport,
+              status: 'error',
+              failureCode: 'internal-error',
+              message: detail,
+              hint: 'Inspect trace.md for the failing run details.',
+              artifacts: {},
+              durationMs: budget,
+            },
+            trace: detail,
+          };
+
+          if (options.failFast) {
+            isAborted = true;
+            break;
+          }
+          continue;
+        }
+
+        if (combo.kind === 'fatal') {
+          results[i] = {
+            index: i,
+            outcome: combo.outcome ?? {
+              id: scenario.id,
+              ...(scenario.label === undefined ? {} : { label: scenario.label }),
+              route: scenario.route ?? options.file.route,
+              viewport,
+              status: 'error',
+              failureCode: 'internal-error',
+              message: combo.fatal.message,
+              hint: combo.fatal.hint,
+              artifacts: {},
+              durationMs: 0,
+            },
+            fatal: combo.fatal,
+          };
+          if (fatal === undefined) {
+            fatal = combo.fatal;
+          }
+          if (options.failFast) {
+            isAborted = true;
+            break;
+          }
+          continue;
+        }
+
+        results[i] = {
+          index: i,
+          outcome: combo.outcome,
+          trace: combo.trace,
+        };
+
+        if (
+          options.failFast &&
+          (combo.outcome.status === 'failed' || combo.outcome.status === 'error')
+        ) {
+          isAborted = true;
+          break;
+        }
+      }
+    }
+
+    const workerCount = Math.min(concurrency, pairs.length);
+    const workerPromises = Array.from({ length: Math.max(1, workerCount) }, () => worker());
+    await Promise.all(workerPromises);
+
+    // Reconstruct outcomes and traces in exact declaration order (index 0 to pairs.length - 1)
+    for (let i = 0; i < pairs.length; i++) {
+      const res = results[i];
+      const pair = pairs[i];
+      if (!pair) continue;
+      if (res) {
+        if (res.trace !== undefined) {
+          traces.push({
+            scenarioId: pair.scenario.id,
+            viewportName: pair.viewport.name,
+            detail: res.trace,
+          });
+        }
+        outcomes.push(res.outcome);
+        if (res.fatal && fatal === undefined) {
+          fatal = res.fatal;
+        }
+      } else {
+        // Was aborted or skipped due to fail-fast
         outcomes.push({
-          id: rem.scenario.id,
-          ...(rem.scenario.label === undefined ? {} : { label: rem.scenario.label }),
-          route: rem.scenario.route ?? options.file.route,
-          viewport: rem.viewport,
+          id: pair.scenario.id,
+          ...(pair.scenario.label === undefined ? {} : { label: pair.scenario.label }),
+          route: pair.scenario.route ?? options.file.route,
+          viewport: pair.viewport,
           status: 'aborted',
           message: 'skipped due to --fail-fast',
           artifacts: {},
           durationMs: 0,
         });
-      }
-    };
-
-    for (let i = 0; i < pairs.length; i++) {
-      const currentPair = pairs[i];
-      if (!currentPair || fatal !== undefined) break;
-      const { scenario, viewport } = currentPair;
-
-      const effectiveTimeout =
-        scenario.expect.timeoutMs ?? options.timeoutMsOverride ?? options.failureBudgetMs ?? 5000;
-      const budget = effectiveTimeout + WATCHDOG_GRACE_MS + DEFAULT_TIMEOUT_MS;
-
-      let liveContext: BrowserContext | null = null;
-      const comboPromise = executeCombo({
-        browser,
-        baseUrl: options.baseUrl,
-        route: options.file.route,
-        scenarioName: options.file.name,
-        scenario,
-        viewport,
-        timeoutMs: effectiveTimeout,
-        allowThirdParty: options.allowThirdParty ?? false,
-        paths,
-        scenarioFilePath: options.scenarioFilePath,
-        updateBaselines: options.updateBaselines,
-        diff: options.diff,
-        baselineDir: options.baselineDir,
-        diffThreshold: options.diffThreshold,
-      }).then((result) => {
-        liveContext = null;
-        return result;
-      });
-      void liveContext;
-
-      let combo: ComboResult;
-      try {
-        combo = await Promise.race([
-          comboPromise,
-          sleep(budget).then(() => {
-            throw new Error(`watchdog: scenario exceeded ${budget}ms budget`);
-          }),
-        ]);
-      } catch (watchdogError) {
-        const detail =
-          watchdogError instanceof Error ? watchdogError.message : String(watchdogError);
-        traces.push({ scenarioId: scenario.id, viewportName: viewport.name, detail });
-        outcomes.push({
-          id: scenario.id,
-          ...(scenario.label === undefined ? {} : { label: scenario.label }),
-          route: scenario.route ?? options.file.route,
-          viewport,
-          status: 'error',
-          failureCode: 'internal-error',
-          message: detail,
-          hint: 'Inspect trace.md for the failing run details.',
-          artifacts: {},
-          durationMs: budget,
-        });
-
-        if (options.failFast) {
-          abortRemaining(i + 1);
-          break;
-        }
-        continue;
-      }
-
-      if (combo.kind === 'fatal') {
-        fatal = combo.fatal;
-        if (combo.outcome !== undefined) outcomes.push(combo.outcome);
-        if (options.failFast) {
-          abortRemaining(i + 1);
-        }
-        break;
-      }
-      if (combo.trace !== undefined) {
-        traces.push({
-          scenarioId: scenario.id,
-          viewportName: viewport.name,
-          detail: combo.trace,
-        });
-      }
-      outcomes.push(combo.outcome);
-
-      if (
-        options.failFast &&
-        (combo.outcome.status === 'failed' || combo.outcome.status === 'error')
-      ) {
-        abortRemaining(i + 1);
-        break;
       }
     }
 

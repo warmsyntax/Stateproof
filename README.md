@@ -9,7 +9,7 @@
 [![CI Status](https://github.com/warmsyntax/Stateproof/actions/workflows/ci.yml/badge.svg)](https://github.com/warmsyntax/Stateproof/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-[Website](https://stateproof.dev) · [Documentation](docs/) · [LLM Guide](llms.txt) · [Report Bug](https://github.com/warmsyntax/Stateproof/issues)
+[Website](https://stateproof.dev) · [Documentation](docs/) · [LLM Guide](landing-site/llms.txt) · [Report Bug](https://github.com/warmsyntax/Stateproof/issues)
 
 </div>
 
@@ -64,6 +64,18 @@ Stateproof immediately tells you (and your AI agent) exactly what broke, why it 
 
 ---
 
+## ⚡ 10-Second Zero-Setup Demo
+
+Experience Stateproof immediately with zero configuration against an embedded demo app:
+
+```bash
+npx @stateproof-dev/cli demo
+```
+
+This runs all 4 canonical edge states in parallel, prints a deterministic PR Markdown proof card to your terminal, and opens an offline HTML report.
+
+---
+
 ## 30-Second Quickstart
 
 ### 1. Scaffold Your Config
@@ -80,7 +92,7 @@ Specify what route to test, which API endpoint to intercept, and which DOM selec
 
 ```json
 {
-  "$schema": "https://unpkg.com/@stateproof-dev/core@0.1.3/schema/v1.json",
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
   "name": "account-settings",
   "baseUrl": "http://localhost:5173",
   "route": "/settings",
@@ -123,8 +135,11 @@ Specify what route to test, which API endpoint to intercept, and which DOM selec
 Make sure your local dev server is running, then execute:
 
 ```bash
-# Run headless validation across all scenarios and viewports
+# Run headless validation across all scenarios in parallel (workers auto-scaled)
 npx @stateproof-dev/cli run
+
+# Run with explicit worker concurrency
+npx @stateproof-dev/cli run --workers 4
 
 # Or launch the interactive Terminal UI (TUI)
 npx @stateproof-dev/cli studio
@@ -148,7 +163,7 @@ npx @stateproof-dev/cli export --format md
 
 **Artifacts:** `artifacts/stateproof/account-settings/` — loading.desktop.png · empty.desktop.png · error.desktop.png
 
-**Run:** local · Stateproof 0.1.3 · Chromium 141 · runId 01J9ZK... · 2026-08-24T00:00:00Z
+**Run:** local · Stateproof 0.2.0 · Chromium 141 · runId 01J9ZK... · 2026-08-31T00:00:00Z
 ```
 
 ---
@@ -191,6 +206,15 @@ Stateproof is organized as a modular TypeScript monorepo published under `@state
 | [`@stateproof-dev/playwright-runner`](packages/playwright-runner) | Browser execution engine, CDP network interception, and artifact capture |
 | [`@stateproof-dev/reporter-html`](packages/reporter-html) | Zero-external-network standalone HTML report generator |
 | [`@stateproof-dev/app`](packages/app) | Shared orchestration layer between CLI / MCP and runner |
+
+### 🚀 Official Framework Examples
+
+| Example App | Framework | Link |
+|---|---|---|
+| **React + Vite** | React 19, Vite | [`examples/react-vite-demo`](examples/react-vite-demo) |
+| **Next.js** | Next.js 15 App Router | [`examples/nextjs-app-router-demo`](examples/nextjs-app-router-demo) |
+| **Vue 3 + Vite** | Vue 3 Composition API, Vite | [`examples/vue-vite-demo`](examples/vue-vite-demo) |
+| **SvelteKit** | Svelte 5, SvelteKit 2 | [`examples/sveltekit-demo`](examples/sveltekit-demo) |
 
 ---
 

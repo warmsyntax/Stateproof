@@ -10,15 +10,16 @@ If a user prompts you to set up or run Stateproof, execute these steps:
 
 ```text
 Setup Stateproof in this repository:
-1. Connect MCP Server: npx -y @stateproof-dev/mcp-server
-2. Initialize config: npx @stateproof-dev/cli init --url http://localhost:5173
-3. Inspect frontend components and generate stateproof.scenarios.json covering:
+1. Try Zero-Setup Demo: npx @stateproof-dev/cli demo
+2. Connect MCP Server: npx -y @stateproof-dev/mcp-server
+3. Initialize config: npx @stateproof-dev/cli init --url http://localhost:5173
+4. Inspect frontend components and generate stateproof.scenarios.json covering:
    - loading (delay: 500ms -> visible: loading indicator selector)
    - empty (fixture or inline [] -> visible: empty state selector)
    - error (error: 500 -> visible: [error-message-selector, retry-button-selector])
    - offline (mode: offline -> visible: offline-notice-selector)
-4. Execute validation: npx @stateproof-dev/cli run
-5. Export Markdown PR proof card: npx @stateproof-dev/cli export --format md
+5. Execute validation: npx @stateproof-dev/cli run --workers 4
+6. Export Markdown PR proof card: npx @stateproof-dev/cli export --format md
 ```
 
 ---
@@ -175,7 +176,7 @@ All commands can be run via `npx @stateproof-dev/cli` or directly with `statepro
 
 ```json
 {
-  "$schema": "https://unpkg.com/@stateproof-dev/core@0.1.3/schema/v1.json",
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
   "name": "account-settings",
   "baseUrl": "http://localhost:5173",
   "route": "/settings",

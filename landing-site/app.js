@@ -4,7 +4,6 @@
  */
 
 (function () {
-  'use strict';
 
   /* --------------------------------------------------------------------------
      1. CLIPBOARD COPY ENGINE (UNIVERSAL TRIGGER)

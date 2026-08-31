@@ -1,0 +1,47 @@
+{
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
+  "name": "nextjs-account-settings",
+  "baseUrl": "http://localhost:3000",
+  "route": "/settings",
+  "viewports": [
+    { "name": "desktop", "width": 1440, "height": 1024, "deviceScaleFactor": 1, "isMobile": false },
+    { "name": "mobile", "width": 390, "height": 844, "deviceScaleFactor": 2, "isMobile": true }
+  ],
+  "scenarios": [
+    {
+      "id": "nextjs-loading",
+      "label": "Next.js Loading Skeleton State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "delay", "milliseconds": 400 },
+      "expect": { "visible": "[data-state='loading']" }
+    },
+    {
+      "id": "nextjs-empty",
+      "label": "Next.js Empty State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "fixture", "path": "fixtures/account-empty.json" },
+      "expect": { "visible": "[data-state='empty']" }
+    },
+    {
+      "id": "nextjs-ready",
+      "label": "Next.js Ready State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "fixture", "path": "fixtures/account-ready.json" },
+      "expect": { "visible": "[data-state='ready']" }
+    },
+    {
+      "id": "nextjs-error",
+      "label": "Next.js Server Error State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "error", "status": 500 },
+      "expect": { "visible": ["[data-state='error']", "[data-testid='retry']"] }
+    },
+    {
+      "id": "nextjs-offline",
+      "label": "Next.js Offline State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "offline" },
+      "expect": { "visible": ["[data-state='offline']", "[data-testid='retry']"] }
+    }
+  ]
+}

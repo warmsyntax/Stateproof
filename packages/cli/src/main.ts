@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { exitCodeFor, StateproofError } from '@stateproof-dev/core';
+import { exitCodeFor, STATEPROOF_VERSION, StateproofError } from '@stateproof-dev/core';
 import { Command } from 'commander';
 import pc from 'picocolors';
+import { runDemo } from './commands/demo.js';
 import { runExport } from './commands/export.js';
 import { runInit } from './commands/init.js';
 import { runList } from './commands/list.js';
@@ -9,7 +10,7 @@ import { runRun } from './commands/run.js';
 import { runStudio } from './commands/studio.js';
 import { emitJsonEnvelope } from './reporters/json.js';
 
-const VERSION = '0.1.3';
+const VERSION = STATEPROOF_VERSION;
 
 export function createProgram(): Command {
   const program = new Command();
@@ -18,6 +19,15 @@ export function createProgram(): Command {
     .name('stateproof')
     .description('Stateproof frontend runtime validation CLI')
     .version(VERSION, '-v, --version');
+
+  program
+    .command('demo')
+    .description('Run a zero-setup demo against a bundled app')
+    .option('--no-open', 'Do not open report in browser automatically')
+    .action(async (options) => {
+      const exitCode = await runDemo({ openReport: options.open });
+      process.exit(exitCode);
+    });
 
   program
     .command('init')
@@ -87,6 +97,7 @@ export function createProgram(): Command {
       'Override timeout for failing checks in milliseconds',
       (v) => parseInt(v, 10),
     )
+    .option('--workers <number>', 'Number of parallel workers', (v) => parseInt(v, 10))
     .option('--reporter <type>', 'Output format (human|json)', 'human')
     .option('--tui', 'Launch interactive terminal studio (TUI)')
     .action(async (positionals, options) => {

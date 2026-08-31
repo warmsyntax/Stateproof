@@ -1,8 +1,11 @@
 {
   "name": "@stateproof-dev/app",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Shared application orchestration layer for Stateproof CLI and MCP Server",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "repository": {
     "type": "git",

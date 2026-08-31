@@ -26,6 +26,11 @@ const demoApi = {
 
 export default defineConfig({
   plugins: [react(), demoApi],
+  server: {
+    watch: {
+      ignored: ['**/stateproof.scenarios.json', '**/fixtures/**', '**/artifacts/**', '**/.lock'],
+    },
+  },
   define: {
     __BEACON_ORIGIN__: JSON.stringify(process.env.DEMO_BEACON_ORIGIN ?? ''),
     __HIDE_RETRY_ON_MOBILE__: JSON.stringify(process.env.DEMO_HIDE_RETRY_ON_MOBILE === '1'),

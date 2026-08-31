@@ -6,7 +6,15 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!coverage", "!dist", "!packages/core/schema"]
+    "includes": [
+      "**",
+      "!coverage",
+      "!dist",
+      "!packages/core/schema",
+      "!**/*.svelte",
+      "!**/*.vue",
+      "!landing-site"
+    ]
   },
   "formatter": {
     "enabled": true,

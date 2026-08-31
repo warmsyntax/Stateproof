@@ -46,3 +46,4 @@ export {
   MAX_FIXTURE_BYTES,
   validateSemantics,
 } from './validate.js';
+export { STATEPROOF_VERSION } from './version.js';

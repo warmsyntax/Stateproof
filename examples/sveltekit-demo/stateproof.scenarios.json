@@ -1,0 +1,47 @@
+{
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
+  "name": "sveltekit-account-settings",
+  "baseUrl": "http://localhost:5175",
+  "route": "/",
+  "viewports": [
+    { "name": "desktop", "width": 1440, "height": 1024, "deviceScaleFactor": 1, "isMobile": false },
+    { "name": "mobile", "width": 390, "height": 844, "deviceScaleFactor": 2, "isMobile": true }
+  ],
+  "scenarios": [
+    {
+      "id": "svelte-loading",
+      "label": "Svelte Loading Skeleton State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "delay", "milliseconds": 400 },
+      "expect": { "visible": "[data-state='loading']" }
+    },
+    {
+      "id": "svelte-empty",
+      "label": "Svelte Empty State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "fixture", "path": "fixtures/account-empty.json" },
+      "expect": { "visible": "[data-state='empty']" }
+    },
+    {
+      "id": "svelte-ready",
+      "label": "Svelte Ready State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "fixture", "path": "fixtures/account-ready.json" },
+      "expect": { "visible": "[data-state='ready']" }
+    },
+    {
+      "id": "svelte-error",
+      "label": "Svelte Server Error State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "error", "status": 500 },
+      "expect": { "visible": ["[data-state='error']", "[data-testid='retry']"] }
+    },
+    {
+      "id": "svelte-offline",
+      "label": "Svelte Offline State",
+      "request": { "method": "GET", "urlPattern": "**/api/account" },
+      "response": { "mode": "offline" },
+      "expect": { "visible": ["[data-state='offline']", "[data-testid='retry']"] }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@stateproof-dev/example-sveltekit-demo",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 5175",
+    "build": "vite build",
+    "preview": "vite preview --port 5175",
+    "stateproof-run": "stateproof run"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^4.0.0",
+    "@sveltejs/kit": "^2.16.0",
+    "@sveltejs/vite-plugin-svelte": "^5.0.0",
+    "svelte": "^5.0.0",
+    "vite": "^7.1.0"
+  }
+}

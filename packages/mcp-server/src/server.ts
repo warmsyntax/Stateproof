@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { executeList, executeRun, inspectFailure } from '@stateproof-dev/app';
-import { StateproofError } from '@stateproof-dev/core';
+import { STATEPROOF_VERSION, StateproofError } from '@stateproof-dev/core';
 
 export interface CreateMcpServerOptions {
   name?: string | undefined;
@@ -13,7 +13,7 @@ export function createStateproofMcpServer(options: CreateMcpServerOptions = {}):
   const server = new Server(
     {
       name: options.name ?? 'stateproof',
-      version: options.version ?? '0.1.3',
+      version: options.version ?? STATEPROOF_VERSION,
     },
     {
       capabilities: {
