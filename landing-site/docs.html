@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StateProof Documentation — Runtime Proof Engine Guide</title>
+  <meta name="description" content="Comprehensive technical documentation for StateProof: features, compatibility matrix, CLI commands, scenario specifications, recovery loops, and MCP server setup.">
+  <meta name="theme-color" content="#0B0B09">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="docs-page">
+
+  <!-- ============ NAVIGATION ============ -->
+  <header class="nav" id="site-nav">
+    <a class="nav-brand" href="index.html" aria-label="StateProof home">
+      <span class="brand-mark" aria-hidden="true">[<i>/</i>s]</span>
+      <span class="brand-word">STATEPROOF</span>
+      <span class="brand-ver">v0.2.1</span>
+    </a>
+    <nav class="nav-links" aria-label="Docs chapters">
+      <a href="index.html"><span>←</span>HOME</a>
+      <a href="#quickstart"><span>01</span>QUICKSTART</a>
+      <a href="#compatibility"><span>02</span>COMPATIBILITY</a>
+      <a href="#scenarios"><span>03</span>SCENARIOS</a>
+      <a href="#cli"><span>04</span>CLI</a>
+      <a href="#mcp"><span>05</span>MCP SERVER</a>
+    </nav>
+    <a class="nav-gh" href="https://github.com/warmsyntax/Stateproof" target="_blank" rel="noopener noreferrer">
+      GITHUB <span aria-hidden="true">↗</span>
+    </a>
+  </header>
+
+  <main class="docs-wrapper">
+
+    <!-- ============ SIDEBAR TABLE OF CONTENTS ============ -->
+    <aside class="docs-sidebar" aria-label="Documentation Index">
+      <div class="docs-sidebar-group">
+        <span class="docs-sidebar-title">00 // GETTING STARTED</span>
+        <a href="#overview" class="is-active">Overview &amp; Philosophy</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="#architecture">How StateProof Works</a>
+      </div>
+
+      <div class="docs-sidebar-group">
+        <span class="docs-sidebar-title">01 // INTEGRATION</span>
+        <a href="#compatibility">Compatibility Matrix</a>
+        <a href="#states">The 4 Failure States</a>
+        <a href="#scenarios">Scenario Specifications</a>
+        <a href="#recovery">Recovery Loops &amp; Sockets</a>
+      </div>
+
+      <div class="docs-sidebar-group">
+        <span class="docs-sidebar-title">02 // TOOLING &amp; AGENTS</span>
+        <a href="#cli">CLI Command Reference</a>
+        <a href="#mcp">MCP Server for AI Agents</a>
+        <a href="#diffing">Pixel &amp; ARIA Lens</a>
+        <a href="#ci-cd">GitHub Actions CI/CD</a>
+      </div>
+
+      <div class="docs-sidebar-group">
+        <span class="docs-sidebar-title">03 // REFERENCE</span>
+        <a href="#security">Localhost &amp; Security</a>
+        <a href="#boundaries">Known Boundaries</a>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN DOCUMENTATION CONTENT ============ -->
+    <article class="docs-content">
+
+      <!-- Docs Header -->
+      <header class="docs-header" id="overview">
+        <p class="docs-kicker"><span class="live-dot" aria-hidden="true"></span>TECHNICAL SPECIFICATION &amp; RUNTIME GUIDE</p>
+        <h1>Deterministic Proof For Web Applications</h1>
+        <p>
+          StateProof is an industrial-grade runtime validation engine designed for engineering teams and AI coding agents.
+          It launches a controlled, isolated Chromium process and intercepts network traffic directly at the Chrome DevTools Protocol (CDP) layer — proving that your UI survives Loading, Empty, Error, and Offline states with zero code modifications.
+        </p>
+      </header>
+
+      <!-- 01 Quickstart -->
+      <section class="docs-section" id="quickstart">
+        <span class="docs-section-tag">01 // QUICKSTART</span>
+        <h2>Zero-Friction Getting Started</h2>
+        <p>
+          You don't need to install large browser binaries or modify your package dependencies. Run StateProof directly using <code>npx</code> against any running local dev server:
+        </p>
+
+        <div class="code-card">
+          <div class="code-card-header">
+            <span class="code-card-lang">BASH // INITIALIZE</span>
+            <button class="chip copy-trigger" data-copy="npx @stateproof-dev/cli init --url http://localhost:5173" aria-label="Copy command">
+              <span class="chip-tag">COPY</span>
+            </button>
+          </div>
+          <pre><code># 1. Initialize StateProof configuration for your app
+npx @stateproof-dev/cli init --url http://localhost:5173
+
+# 2. Run deterministic validation against all scenarios
+npx @stateproof-dev/cli run
+
+# 3. Export Markdown PR proof card with timestamped artifacts
+npx @stateproof-dev/cli export --format md</code></pre>
+        </div>
+
+        <div class="doc-alert">
+          <span class="doc-alert-title">TRY THE INSTANT ZERO-SETUP DEMO</span>
+          <p>Want to see StateProof prove failure states immediately? Run <code>npx @stateproof-dev/cli demo</code> in any terminal. It spins up an ephemeral test workbench and outputs real evidence cards in under 5 seconds.</p>
+        </div>
+      </section>
+
+      <!-- 02 Architecture -->
+      <section class="docs-section" id="architecture">
+        <span class="docs-section-tag">02 // ARCHITECTURE</span>
+        <h2>Wire-Level Interception: Pure CDP</h2>
+        <p>
+          Traditional testing tools rely on Mock Service Worker (MSW), proxy daemons, or monkey-patching <code>window.fetch</code>. These approaches distort the application environment, fail on WebSockets, and require editing source files.
+        </p>
+        <p>
+          <strong>StateProof takes a fundamentally different path:</strong>
+        </p>
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Vector</th>
+                <th>MSW / Proxy Servers</th>
+                <th>StateProof Engine</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Interception Layer</strong></td>
+                <td>Service Worker / Localhost Proxy</td>
+                <td><span class="badge badge--green">Pure Chromium CDP</span></td>
+              </tr>
+              <tr>
+                <td><strong>Source Code Edits</strong></td>
+                <td>Required (mock handlers, setup scripts)</td>
+                <td><span class="badge badge--green">Zero app edits (0 Tamper)</span></td>
+              </tr>
+              <tr>
+                <td><strong>WebSocket &amp; SSE Drops</strong></td>
+                <td>Unsupported / complex setup</td>
+                <td><span class="badge badge--green">Mid-stream raw CDP severance</span></td>
+              </tr>
+              <tr>
+                <td><strong>Telemetry &amp; Cloud</strong></td>
+                <td>Varies by vendor</td>
+                <td><span class="badge badge--mint">100% Local / 0 Packets Phoned</span></td>
+              </tr>
+              <tr>
+                <td><strong>Artifact Outputs</strong></td>
+                <td>Test terminal logs</td>
+                <td><span class="badge badge--green">Timestamped PNG Proof &amp; DOM Evidence</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 03 Compatibility Matrix -->
+      <section class="docs-section" id="compatibility">
+        <span class="docs-section-tag">03 // COMPATIBILITY</span>
+        <h2>Framework &amp; Tool Compatibility Matrix</h2>
+        <p>
+          Because StateProof operates strictly from the outside at the browser wire, it is completely framework-agnostic. If it renders in Chromium, StateProof can prove it.
+        </p>
+
+        <h3>1. Web Frameworks</h3>
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Framework</th>
+                <th>Status</th>
+                <th>Notes &amp; Capabilities</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Next.js (App &amp; Pages Router)</strong></td>
+                <td><span class="badge badge--green">FULL SUPPORT</span></td>
+                <td>Validates client transitions, SWR/React Query hooks, error boundaries, and suspense skeletons.</td>
+              </tr>
+              <tr>
+                <td><strong>Vite + React / TypeScript</strong></td>
+                <td><span class="badge badge--green">FULL SUPPORT</span></td>
+                <td>Instant preflight detection on <code>localhost:5173</code> / <code>localhost:3000</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Remix / React Router v7</strong></td>
+                <td><span class="badge badge--green">FULL SUPPORT</span></td>
+                <td>Client loader interception, optimistic UI validation, and action error recovery.</td>
+              </tr>
+              <tr>
+                <td><strong>Vue 3 / Nuxt 3</strong></td>
+                <td><span class="badge badge--green">FULL SUPPORT</span></td>
+                <td>Pinia state fallbacks, async component suspense, and fetch delays.</td>
+              </tr>
+              <tr>
+                <td><strong>SvelteKit / Svelte 5</strong></td>
+                <td><span class="badge badge--green">FULL SUPPORT</span></td>
+                <td>Rune state mutations, loading states, and offline reconnect banners.</td>
+              </tr>
+              <tr>
+                <td><strong>Astro / Static HTML</strong></td>
+                <td><span class="badge badge--green">FULL SUPPORT</span></td>
+                <td>Island hydration checks and client dynamic fetch verification.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>2. Browser &amp; Environment Matrix</h3>
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Target</th>
+                <th>Detection</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>System Google Chrome</strong></td>
+                <td><span class="badge badge--green">AUTO-DETECT</span></td>
+                <td>Uses existing workstation Chrome (macOS, Windows, Linux). No download required.</td>
+              </tr>
+              <tr>
+                <td><strong>Microsoft Edge</strong></td>
+                <td><span class="badge badge--green">AUTO-DETECT</span></td>
+                <td>Native fallback on Windows / macOS environments.</td>
+              </tr>
+              <tr>
+                <td><strong>CI / Docker Chromium</strong></td>
+                <td><span class="badge badge--mint">HEADLESS</span></td>
+                <td>Runs flawlessly inside GitHub Actions, GitLab CI, and Linux Docker containers.</td>
+              </tr>
+              <tr>
+                <td><strong>Remote CDP Browser</strong></td>
+                <td><span class="badge badge--mint">--cdp-url</span></td>
+                <td>Attach to any remote or cloud browser instance via <code>--cdp-url http://...</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>3. AI Coding Agent Integrations</h3>
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Agent / Environment</th>
+                <th>Integration Protocol</th>
+                <th>Setup</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Cursor</strong></td>
+                <td><span class="badge badge--green">MCP Protocol</span></td>
+                <td>Add to <code>.cursor/mcp.json</code>: <code>npx -y @stateproof-dev/mcp-server</code></td>
+              </tr>
+              <tr>
+                <td><strong>Claude Code / Desktop</strong></td>
+                <td><span class="badge badge--green">MCP Protocol</span></td>
+                <td>Add to <code>claude_desktop_config.json</code> under mcpServers.</td>
+              </tr>
+              <tr>
+                <td><strong>GitHub Copilot / Codex</strong></td>
+                <td><span class="badge badge--green">CLI &amp; llms.txt</span></td>
+                <td>Automatic context discovery via <code>llms.txt</code> standard specification.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 04 The 4 Failure States -->
+      <section class="docs-section" id="states">
+        <span class="docs-section-tag">04 // MECHANISM</span>
+        <h2>The Four Deterministic Failure Modes</h2>
+        <p>
+          AI agents routinely generate the "happy path" — but real users face network latency, zero-item states, server exceptions, and dropped connections. StateProof forces and captures all four:
+        </p>
+
+        <div class="rule-tiles">
+          <article class="rule">
+            <header><span class="rule-id">01</span><span class="rule-tag tag--lime">LOADING STATE</span></header>
+            <p>Injects artificial millisecond delay (e.g. <code>delay: 3000ms</code>) before response headers arrive. Proves loading spinners, skeleton shimmer, and disabled form submit buttons.</p>
+            <footer>ASSERT: [data-state='loading'], aria-busy='true'</footer>
+          </article>
+          <article class="rule">
+            <header><span class="rule-id">02</span><span class="rule-tag tag--wire">EMPTY STATE</span></header>
+            <p>Fulfills endpoints with empty collections (<code>[]</code> or empty fixtures). Proves zero-item onboarding illustrations, clear messaging, and "Create First Item" CTAs.</p>
+            <footer>ASSERT: [data-state='empty'], .zero-data-cta</footer>
+          </article>
+          <article class="rule">
+            <header><span class="rule-id">03</span><span class="rule-tag tag--coral">ERROR STATE</span></header>
+            <p>Injects HTTP 4xx/5xx status codes (e.g. <code>status: 500</code>). Proves error alerts, message descriptions, and interactive recovery buttons without prod incidents.</p>
+            <footer>ASSERT: [data-state='error'], button#retry</footer>
+          </article>
+          <article class="rule">
+            <header><span class="rule-id">04</span><span class="rule-tag tag--bone">OFFLINE STATE</span></header>
+            <p>Aborts requests with network disconnect (<code>internetdisconnected</code>). Proves offline fallbacks, cached data renders, and reconnection banners.</p>
+            <footer>ASSERT: [data-state='offline'], .reconnecting-toast</footer>
+          </article>
+        </div>
+      </section>
+
+      <!-- 05 Scenario Authoring -->
+      <section class="docs-section" id="scenarios">
+        <span class="docs-section-tag">05 // CONFIGURATION</span>
+        <h2>Scenario Specification Guide (<code>stateproof.scenarios.json</code>)</h2>
+        <p>
+          Scenarios are declared in a declarative, machine-readable JSON file at the root of your project:
+        </p>
+
+        <div class="code-card">
+          <div class="code-card-header">
+            <span class="code-card-lang">JSON // STATEPROOF.SCENARIOS.JSON</span>
+            <button class="chip copy-trigger" data-copy='{
+  "name": "dashboard-app",
+  "baseUrl": "http://localhost:5173",
+  "route": "/dashboard",
+  "viewports": [
+    { "name": "desktop", "width": 1440, "height": 1024 },
+    { "name": "mobile", "width": 390, "height": 844, "isMobile": true }
+  ],
+  "scenarios": [
+    {
+      "id": "loading-state",
+      "label": "Dashboard loading skeleton renders during latency",
+      "request": { "method": "GET", "urlPattern": "**/api/analytics" },
+      "response": { "delayMs": 2500 },
+      "expect": {
+        "visible": ["[data-testid=\"skeleton-chart\"]", "[aria-busy=\"true\"]"]
+      }
+    },
+    {
+      "id": "empty-state",
+      "label": "Empty project banner and onboarding CTA",
+      "request": { "method": "GET", "urlPattern": "**/api/projects" },
+      "response": { "status": 200, "body": { "projects": [] } },
+      "expect": {
+        "visible": ["[data-state=\"empty\"]", "button#create-project"]
+      }
+    },
+    {
+      "id": "error-recovery",
+      "label": "500 failure triggers error card and retry recovery cycle",
+      "request": { "method": "GET", "urlPattern": "**/api/billing" },
+      "response": { "status": 500 },
+      "expect": {
+        "visible": ["[data-state=\"error\"]", "button#retry-billing"]
+      },
+      "recovery": {
+        "action": "click",
+        "selector": "button#retry-billing",
+        "nextResponse": { "status": 200, "fixture": "billing-active.json" },
+        "expectRecovered": ["[data-state=\"ready\"]"]
+      }
+    },
+    {
+      "id": "offline-banner",
+      "label": "Offline banner appears on network disconnect",
+      "request": { "method": "GET", "urlPattern": "**/api/feed" },
+      "response": { "mode": "offline" },
+      "expect": {
+        "visible": [".offline-notice"]
+      }
+    }
+  ]
+}' aria-label="Copy scenario config">
+              <span class="chip-tag">COPY JSON</span>
+            </button>
+          </div>
+          <pre><code>{
+  "name": "dashboard-app",
+  "baseUrl": "http://localhost:5173",
+  "route": "/dashboard",
+  "viewports": [
+    { "name": "desktop", "width": 1440, "height": 1024 },
+    { "name": "mobile", "width": 390, "height": 844, "isMobile": true }
+  ],
+  "scenarios": [
+    {
+      "id": "loading-state",
+      "label": "Dashboard loading skeleton renders during latency",
+      "request": { "method": "GET", "urlPattern": "**/api/analytics" },
+      "response": { "delayMs": 2500 },
+      "expect": {
+        "visible": ["[data-testid=\"skeleton-chart\"]", "[aria-busy=\"true\"]"]
+      }
+    },
+    {
+      "id": "empty-state",
+      "label": "Empty project banner and onboarding CTA",
+      "request": { "method": "GET", "urlPattern": "**/api/projects" },
+      "response": { "status": 200, "body": { "projects": [] } },
+      "expect": {
+        "visible": ["[data-state=\"empty\"]", "button#create-project"]
+      }
+    },
+    {
+      "id": "error-recovery",
+      "label": "500 failure triggers error card and retry recovery cycle",
+      "request": { "method": "GET", "urlPattern": "**/api/billing" },
+      "response": { "status": 500 },
+      "expect": {
+        "visible": ["[data-state=\"error\"]", "button#retry-billing"]
+      },
+      "recovery": {
+        "action": "click",
+        "selector": "button#retry-billing",
+        "nextResponse": { "status": 200, "fixture": "billing-active.json" },
+        "expectRecovered": ["[data-state=\"ready\"]"]
+      }
+    }
+  ]
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- 06 Recovery & Sockets -->
+      <section class="docs-section" id="recovery">
+        <span class="docs-section-tag">06 // ADVANCED</span>
+        <h2>Recovery Loops &amp; WebSocket Interception</h2>
+        <p>
+          Testing error states is only half the proof — you must verify that the user can <strong>recover</strong> without refreshing the page.
+        </p>
+        <p>
+          StateProof's <code>recovery</code> block orchestrates this full lifecycle:
+        </p>
+        <ol style="margin-left: 20px; font-family: var(--font-mono); font-size: 13px; color: var(--dim); display: flex; flex-direction: column; gap: 8px;">
+          <li>Injects the failing response (e.g. 500 Internal Server Error).</li>
+          <li>Asserts error banner visibility and captures failure screenshot.</li>
+          <li>Emulates user click on the retry CTA selector.</li>
+          <li>Dynamically switches CDP response interception to healthy fixture (200 OK).</li>
+          <li>Asserts recovery state and captures resolved screenshot.</li>
+        </ol>
+      </section>
+
+      <!-- 07 CLI Reference -->
+      <section class="docs-section" id="cli">
+        <span class="docs-section-tag">07 // COMMAND LINE</span>
+        <h2>CLI Command Reference</h2>
+        <div class="docs-table-wrap">
+          <table class="docs-table">
+            <thead>
+              <tr>
+                <th>Command</th>
+                <th>Flags</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>stateproof init</code></td>
+                <td><code>--url &lt;url&gt;</code>, <code>--route &lt;path&gt;</code></td>
+                <td>Scans running dev server, detects routes, and initializes <code>stateproof.scenarios.json</code>.</td>
+              </tr>
+              <tr>
+                <td><code>stateproof run</code></td>
+                <td><code>--workers &lt;n&gt;</code>, <code>--headless</code>, <code>--filter &lt;id&gt;</code></td>
+                <td>Executes all configured scenarios across desktop &amp; mobile viewports and saves artifacts.</td>
+              </tr>
+              <tr>
+                <td><code>stateproof demo</code></td>
+                <td><code>--open</code></td>
+                <td>Launches ephemeral interactive failure testing workbench.</td>
+              </tr>
+              <tr>
+                <td><code>stateproof export</code></td>
+                <td><code>--format &lt;md|html&gt;</code>, <code>--out &lt;dir&gt;</code></td>
+                <td>Exports visual proof cards ready for Pull Request descriptions or audit docs.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 08 MCP Server -->
+      <section class="docs-section" id="mcp">
+        <span class="docs-section-tag">08 // MODEL CONTEXT PROTOCOL</span>
+        <h2>MCP Server for AI Coding Agents</h2>
+        <p>
+          StateProof provides a standard Model Context Protocol (MCP) server so coding agents like Claude Code, Cursor, and Codex can run runtime proofs, inspect DOM diagnostics, and self-heal missing selectors autonomously.
+        </p>
+
+        <div class="code-card">
+          <div class="code-card-header">
+            <span class="code-card-lang">JSON // .CURSOR/MCP.JSON</span>
+            <button class="chip copy-trigger" data-copy='{
+  "mcpServers": {
+    "stateproof": {
+      "command": "npx",
+      "args": ["-y", "@stateproof-dev/mcp-server"]
+    }
+  }
+}' aria-label="Copy MCP JSON">
+              <span class="chip-tag">COPY</span>
+            </button>
+          </div>
+          <pre><code>{
+  "mcpServers": {
+    "stateproof": {
+      "command": "npx",
+      "args": ["-y", "@stateproof-dev/mcp-server"]
+    }
+  }
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- 09 CI/CD Integration -->
+      <section class="docs-section" id="ci-cd">
+        <span class="docs-section-tag">09 // AUTOMATION</span>
+        <h2>Continuous Integration (GitHub Actions)</h2>
+        <p>
+          Add deterministic runtime proof gates to your PR pipeline. If an AI agent or engineer breaks the offline fallback or error recovery, the build fails before reaching production:
+        </p>
+
+        <div class="code-card">
+          <div class="code-card-header">
+            <span class="code-card-lang">YAML // .GITHUB/WORKFLOWS/STATEPROOF.YML</span>
+            <button class="chip copy-trigger" data-copy="name: StateProof Gate
+on: [pull_request]
+
+jobs:
+  prove-states:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build
+      - name: Start Preview Server
+        run: npx serve -s dist -l 5173 &
+      - name: Run StateProof Validation
+        run: npx @stateproof-dev/cli run --headless --workers 4
+      - name: Export PR Proof Card
+        if: always()
+        run: npx @stateproof-dev/cli export --format md >> $GITHUB_STEP_SUMMARY" aria-label="Copy GitHub Action YAML">
+              <span class="chip-tag">COPY YAML</span>
+            </button>
+          </div>
+          <pre><code>name: StateProof Gate
+on: [pull_request]
+
+jobs:
+  prove-states:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build
+      - name: Start Preview Server
+        run: npx serve -s dist -l 5173 &
+      - name: Run StateProof Validation
+        run: npx @stateproof-dev/cli run --headless --workers 4
+      - name: Export PR Proof Card
+        if: always()
+        run: npx @stateproof-dev/cli export --format md >> $GITHUB_STEP_SUMMARY</code></pre>
+        </div>
+      </section>
+
+      <!-- 10 Security & Boundaries -->
+      <section class="docs-section" id="security">
+        <span class="docs-section-tag">10 // INTEGRITY</span>
+        <h2>Security Model &amp; Operational Boundaries</h2>
+        <div class="doc-alert">
+          <span class="doc-alert-title">LOOPBACK-LOCKED BY DEFAULT</span>
+          <p>By default, StateProof only navigates to <code>http://localhost:*</code> and <code>http://127.0.0.1:*</code>. Any external network origin is rejected to prevent accidental CI leakage or tampering with production APIs.</p>
+        </div>
+
+        <h3 id="boundaries">When StateProof Operates Best</h3>
+        <ul style="margin-left: 20px; font-family: var(--font-mono); font-size: 13px; color: var(--dim); display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>Client-Side Network Requests</strong>: StateProof intercepts client <code>fetch</code>, <code>XHR</code>, WebSocket, and SSE calls in Chromium.</li>
+          <li><strong>SSR Initial Data</strong>: If data is baked statically into HTML at build time without client fetch, test the client mutations, re-validations, or page transitions instead.</li>
+          <li><strong>Zero Telemetry</strong>: No accounts, no API keys, zero cloud metrics. Everything executes 100% on your workstation.</li>
+        </ul>
+      </section>
+
+    </article>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="horizon" id="colophon">
+    <div class="horizon-line" aria-hidden="true"></div>
+    <div class="horizon-inner">
+      <p class="horizon-word" aria-hidden="true">STATEPROOF<span>.</span></p>
+      <div class="horizon-base">
+        <span>[/s] STATEPROOF — RUNTIME PROOF ENGINE</span>
+        <span class="base-sep" aria-hidden="true"></span>
+        <a href="index.html" style="color: var(--signal)">← RETURN TO LANDING PAGE</a>
+        <span class="base-sep" aria-hidden="true"></span>
+        <span>© 2026 · NO PIXELS WERE ROUNDED</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">COPIED ✓</div>
+
+  <!-- Scripts -->
+  <script src="js/main.js"></script>
+</body>
+</html>

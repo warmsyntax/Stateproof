@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" fill="none" shape-rendering="crispEdges">
+  <defs>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Radiating Signal Waves from the Fingertip -->
+  <g stroke="#D4F638" stroke-width="2" stroke-dasharray="4 4" opacity="0.95" filter="url(#glow)">
+    <circle cx="200" cy="90" r="32" />
+    <circle cx="200" cy="90" r="54" opacity="0.75" />
+    <circle cx="200" cy="90" r="78" stroke="#9EC7BB" opacity="0.55" stroke-dasharray="6 4" />
+    <circle cx="200" cy="90" r="105" stroke="#9EC7BB" opacity="0.35" stroke-dasharray="8 6" />
+    <circle cx="200" cy="90" r="135" stroke="#E8E4D8" opacity="0.2" stroke-dasharray="10 8" />
+  </g>
+
+  <!-- Signal Wave ASCII / Step Ticks -->
+  <g fill="#D4F638" opacity="0.9">
+    <rect x="198" y="24" width="4" height="4" />
+    <rect x="198" y="4" width="4" height="4" />
+    <rect x="238" y="38" width="4" height="4" />
+    <rect x="158" y="38" width="4" height="4" />
+    <rect x="272" y="74" width="4" height="4" />
+    <rect x="124" y="74" width="4" height="4" />
+    <rect x="290" y="118" width="4" height="4" />
+    <rect x="106" y="118" width="4" height="4" />
+  </g>
+
+  <!-- Wire Interception Grid lines -->
+  <g stroke="#9EC7BB" stroke-width="1" opacity="0.25">
+    <line x1="40" y1="90" x2="360" y2="90" stroke-dasharray="6 6" />
+    <line x1="200" y1="10" x2="200" y2="480" stroke-dasharray="6 6" />
+    <line x1="120" y1="180" x2="280" y2="180" stroke-dasharray="4 4" />
+    <line x1="120" y1="280" x2="280" y2="280" stroke-dasharray="4 4" />
+    <line x1="120" y1="380" x2="280" y2="380" stroke-dasharray="4 4" />
+  </g>
+
+  <!-- Glowing Wire Contact Point -->
+  <rect x="194" y="84" width="12" height="12" fill="#D4F638" filter="url(#glow)" />
+  <rect x="197" y="87" width="6" height="6" fill="#0B0B09" />
+
+  <!-- The Intercepting Hand — Brutalist Precision Pixel/Vector Wireframe -->
+  <!-- Index Finger -->
+  <g fill="none" stroke="#E8E4D8" stroke-width="1.5">
+    <!-- Fingertip outline -->
+    <path d="M 188 94 L 188 230 L 212 230 L 212 94 Z" stroke="#E8E4D8" />
+    <!-- Index joint notches -->
+    <line x1="188" y1="130" x2="212" y2="130" stroke="#9EC7BB" stroke-dasharray="2 2" />
+    <line x1="188" y1="170" x2="212" y2="170" stroke="#9EC7BB" stroke-dasharray="2 2" />
+    <line x1="188" y1="200" x2="212" y2="200" stroke="#9EC7BB" stroke-dasharray="2 2" />
+
+    <!-- Middle Finger -->
+    <path d="M 216 160 L 216 230 L 238 230 L 238 160 Z" stroke="#E8E4D8" />
+    <line x1="216" y1="185" x2="238" y2="185" stroke="#9EC7BB" stroke-dasharray="2 2" />
+
+    <!-- Ring Finger -->
+    <path d="M 242 180 L 242 240 L 262 240 L 262 180 Z" stroke="#E8E4D8" />
+    <line x1="242" y1="205" x2="262" y2="205" stroke="#9EC7BB" stroke-dasharray="2 2" />
+
+    <!-- Pinky Finger -->
+    <path d="M 266 210 L 266 260 L 284 260 L 284 210 Z" stroke="#E8E4D8" />
+
+    <!-- Thumb -->
+    <path d="M 152 230 L 172 195 L 186 210 L 174 255 Z" stroke="#E8E4D8" />
+    <line x1="160" y1="212" x2="180" y2="228" stroke="#9EC7BB" stroke-dasharray="2 2" />
+
+    <!-- Palm Perimeter -->
+    <path d="M 154 230 L 140 270 L 148 360 L 256 360 L 284 260 L 212 230 L 188 230 Z" stroke="#E8E4D8" stroke-width="1.5" />
+
+    <!-- Wrist & Forearm -->
+    <path d="M 156 360 L 156 460 L 248 460 L 248 360" stroke="#E8E4D8" stroke-width="1.5" />
+  </g>
+
+  <!-- Stepped ASCII Texture inside the hand structure -->
+  <g fill="#E8E4D8" font-family="'IBM Plex Mono', monospace" font-size="7" opacity="0.65">
+    <text x="191" y="112">:::</text>
+    <text x="191" y="124">+++</text>
+    <text x="191" y="146">#:#</text>
+    <text x="191" y="158">:::</text>
+    <text x="191" y="186">+#+</text>
+    <text x="191" y="218">:::</text>
+
+    <text x="219" y="176">:::</text>
+    <text x="219" y="200">#:#</text>
+    <text x="219" y="220">+++</text>
+
+    <text x="245" y="196">::</text>
+    <text x="245" y="220">#:</text>
+    <text x="245" y="235">++</text>
+
+    <!-- Palm ASCII Ledger Matrix -->
+    <text x="160" y="260">01010101010101</text>
+    <text x="152" y="275">::: PROOF WIRE :::</text>
+    <text x="156" y="290"># # # # # # # #</text>
+    <text x="150" y="305">CDP // INTERCEPT</text>
+    <text x="156" y="320">+ + + + + + + +</text>
+    <text x="160" y="335">NO_MOCK_SERVER</text>
+    <text x="166" y="350">127.0.0.1:CDP</text>
+
+    <!-- Wrist Matrix -->
+    <text x="168" y="380">0x7F000001</text>
+    <text x="168" y="400">=== WIRE ===</text>
+    <text x="168" y="420">PORT::9222</text>
+    <text x="168" y="440">CAPTURED</text>
+  </g>
+
+  <!-- Accent Pixels -->
+  <g fill="#D4F638">
+    <rect x="175" y="270" width="3" height="3" />
+    <rect x="230" y="290" width="3" height="3" />
+    <rect x="180" y="340" width="3" height="3" />
+    <rect x="215" y="390" width="3" height="3" />
+    <rect x="164" y="440" width="3" height="3" />
+  </g>
+
+  <g fill="#9EC7BB">
+    <rect x="145" y="250" width="3" height="3" />
+    <rect x="250" y="310" width="3" height="3" />
+    <rect x="235" y="420" width="3" height="3" />
+  </g>
+</svg>

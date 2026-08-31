@@ -163,10 +163,11 @@ Generates a markdown or JSON Stateproof proof card from artifact runs for PR des
 
 All commands can be run via `npx @stateproof-dev/cli` or directly with `stateproof`:
 
+- `npx @stateproof-dev/cli demo [--no-open]`: Run the zero-setup demo against an embedded app and generate PR proof cards instantly.
 - `npx @stateproof-dev/cli init [--url <baseUrl>] [--route <path>]`: Scaffold `stateproof.scenarios.json`, fixtures directory, and `.gitignore`.
-- `npx @stateproof-dev/cli studio` (or `--tui`): Launch interactive terminal UI for exploratory testing.
+- `npx @stateproof-dev/cli studio` (or `--tui`): Launch interactive terminal UI for exploratory testing (includes zero-setup demo fallback, PR proof card export, and `--workers`/`--headed` flags).
 - `npx @stateproof-dev/cli run [scenario-ids...]`: Run headless browser validation against the local application.
-  - Flags: `--file <path>`, `--url <baseUrl>`, `--viewport <desktop|mobile>`, `--fail-fast`, `--failure-budget-ms <number>`, `--browser-channel <name>`, `--cdp-url <ws-url>`, `--reporter human|json`, `--allow-remote`, `--allow-third-party`, `--diff`, `--update-baselines`.
+  - Flags: `--workers <number>`, `--headed`, `--file <path>`, `--url <baseUrl>`, `--viewport <desktop|mobile>`, `--fail-fast`, `--failure-budget-ms <number>`, `--browser-channel <name>`, `--cdp-url <ws-url>`, `--reporter human|json`, `--allow-remote`, `--allow-third-party`, `--diff`, `--update-baselines`.
 - `npx @stateproof-dev/cli list`: Validate and print defined scenarios and viewports without launching a browser.
 - `npx @stateproof-dev/cli export --format md|json|html`: Export Stateproof Card markdown, machine JSON, or offline HTML report from the latest run.
 
@@ -176,7 +177,7 @@ All commands can be run via `npx @stateproof-dev/cli` or directly with `statepro
 
 ```json
 {
-  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.1/schema/v1.json",
   "name": "account-settings",
   "baseUrl": "http://localhost:5173",
   "route": "/settings",

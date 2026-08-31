@@ -126,6 +126,7 @@ export function createProgram(): Command {
     .option('--diff-threshold <number>', 'Maximum allowed diff pixel ratio (default: 0.001)', (v) =>
       parseFloat(v),
     )
+    .option('--workers <number>', 'Number of parallel workers', (v) => parseInt(v, 10))
     .action(async (options) => {
       const exitCode = await runStudio(options);
       process.exit(exitCode);

@@ -1,0 +1,108 @@
+{
+  "name": "account-settings",
+  "baseUrl": "http://localhost:5173",
+  "route": "/",
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1024,
+      "deviceScaleFactor": 1,
+      "isMobile": false
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "deviceScaleFactor": 2,
+      "isMobile": true
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "account-loading",
+      "label": "Loading State",
+      "request": {
+        "method": "GET",
+        "urlPattern": "**/api/account"
+      },
+      "response": {
+        "mode": "delay",
+        "milliseconds": 500
+      },
+      "expect": {
+        "visible": "[data-state='loading']"
+      }
+    },
+    {
+      "id": "account-empty",
+      "label": "Empty State",
+      "request": {
+        "method": "GET",
+        "urlPattern": "**/api/account"
+      },
+      "response": {
+        "mode": "fixture",
+        "path": "fixtures/account-empty.json"
+      },
+      "expect": {
+        "visible": "[data-state='empty']"
+      }
+    },
+    {
+      "id": "account-ready",
+      "label": "Populated State",
+      "request": {
+        "method": "GET",
+        "urlPattern": "**/api/account"
+      },
+      "response": {
+        "mode": "inline",
+        "body": {
+          "account": {
+            "name": "Ada Lovelace",
+            "plan": "trial"
+          }
+        }
+      },
+      "expect": {
+        "visible": "[data-state='ready']"
+      }
+    },
+    {
+      "id": "account-error",
+      "label": "Error State with Retry Action",
+      "request": {
+        "method": "GET",
+        "urlPattern": "**/api/account"
+      },
+      "response": {
+        "mode": "error",
+        "status": 500
+      },
+      "expect": {
+        "visible": [
+          "[data-state='error']",
+          "[data-testid='retry']"
+        ]
+      }
+    },
+    {
+      "id": "account-offline",
+      "label": "Network Offline State",
+      "request": {
+        "method": "GET",
+        "urlPattern": "**/api/account"
+      },
+      "response": {
+        "mode": "offline"
+      },
+      "expect": {
+        "visible": [
+          "[data-state='offline']",
+          "[data-testid='retry']"
+        ]
+      }
+    }
+  ]
+}

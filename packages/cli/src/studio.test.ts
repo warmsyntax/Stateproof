@@ -9,6 +9,8 @@ describe('stateproof studio', () => {
     expect(commandNames).toContain('studio');
     const studioCmd = program.commands.find((c) => c.name() === 'studio');
     expect(studioCmd?.aliases()).toContain('tui');
+    expect(studioCmd?.options.some((o) => o.long === '--workers')).toBe(true);
+    expect(studioCmd?.options.some((o) => o.long === '--headed')).toBe(true);
     const tuiOption = program.options.find((o) => o.long === '--tui');
     expect(tuiOption).toBeDefined();
   });

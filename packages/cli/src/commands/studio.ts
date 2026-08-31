@@ -11,6 +11,8 @@ import {
 import { StateproofError } from '@stateproof-dev/core';
 import pc from 'picocolors';
 import { renderHumanRunSummary } from '../reporters/human.js';
+import { runDemo } from './demo.js';
+import { runInit } from './init.js';
 
 export interface StudioCommandOptions {
   file?: string | undefined;
@@ -21,6 +23,7 @@ export interface StudioCommandOptions {
   headed?: boolean | undefined;
   baselineDir?: string | undefined;
   diffThreshold?: number | undefined;
+  workers?: number | undefined;
 }
 
 export function openPathInBrowser(targetPath: string): void {
@@ -46,6 +49,48 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
   p.intro(pc.bgCyan(pc.black(' stateproof studio ')));
 
   const filePath = options.file ?? 'stateproof.scenarios.json';
+
+  // Zero-setup first-run fallback: if config file is missing, offer demo or init
+  if (!existsSync(filePath)) {
+    p.log.warn(`No scenario file found at "${filePath}".`);
+    const action = await p.select({
+      message: 'What would you like to do?',
+      options: [
+        {
+          value: 'demo',
+          label: 'Run the Zero-Setup Demo',
+          hint: 'Explore all 4 canonical states against an embedded app',
+        },
+        {
+          value: 'init',
+          label: 'Scaffold a new scenario file (init)',
+          hint: `Create ${filePath} and fixtures directory`,
+        },
+        { value: 'exit', label: 'Exit Studio' },
+      ],
+    });
+
+    if (p.isCancel(action) || action === 'exit') {
+      p.cancel('Studio session cancelled.');
+      return 0;
+    }
+
+    if (action === 'demo') {
+      return runDemo({ openReport: true });
+    }
+
+    if (action === 'init') {
+      const initExitCode = await runInit({
+        file: filePath,
+        ...(options.url ? { url: options.url } : {}),
+      });
+      if (initExitCode !== 0 || !existsSync(filePath)) {
+        return initExitCode;
+      }
+      p.log.success(`Scaffolded ${filePath}. Launching Studio...`);
+    }
+  }
+
   const { file, absolutePath } = loadAndValidateScenarioFile(filePath);
 
   // Secret audit check
@@ -139,7 +184,7 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
         file: filePath,
         scenario: selectedScenarioIds,
         viewport: selectedViewportNames,
-        url: options.url,
+        ...(options.url ? { url: options.url } : {}),
         allowRemote: options.allowRemote,
         allowThirdParty: options.allowThirdParty,
         strictSecrets: options.strictSecrets,
@@ -147,6 +192,8 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
         diffThreshold: options.diffThreshold,
         diff: mode === 'diff',
         updateBaselines: mode === 'update-baselines',
+        ...(options.workers !== undefined ? { workers: options.workers } : {}),
+        ...(options.headed !== undefined ? { headless: !options.headed } : {}),
       };
 
       const result = await executeRun(runOptions);
@@ -173,6 +220,7 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
         message: 'Next step:',
         options: [
           { value: 'open-report', label: 'Open HTML Report in browser' },
+          { value: 'export-card', label: 'Print Markdown Proof Card for PR' },
           { value: 'rerun', label: 'Run again' },
           { value: 'exit', label: 'Exit Studio' },
         ],
@@ -180,7 +228,19 @@ export async function runStudio(options: StudioCommandOptions): Promise<number> 
 
       if (p.isCancel(postAction) || postAction === 'exit') {
         keepRunning = false;
-      } else if (postAction === 'open-report') {
+      } else if (postAction === 'export-card') {
+        process.stdout.write(`\n${result.cardMd}\n\n`);
+        p.log.success('Markdown proof card printed above.');
+
+        const again = await p.confirm({
+          message: 'Perform another action in Studio?',
+          initialValue: true,
+        });
+        if (p.isCancel(again) || !again) {
+          keepRunning = false;
+        }
+      }
+ else if (postAction === 'open-report') {
         const reportHtml = join(result.artifactDir, 'report', 'index.html');
         if (existsSync(reportHtml)) {
           openPathInBrowser(reportHtml);

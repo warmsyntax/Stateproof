@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 440" fill="none" shape-rendering="crispEdges">
+  <defs>
+    <filter id="term-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Monitor Outer Chasis (Brutalist CRT) -->
+  <rect x="70" y="40" width="280" height="230" stroke="#E8E4D8" stroke-width="2" fill="#12120F" fill-opacity="0.8" />
+  <rect x="82" y="52" width="256" height="206" stroke="#232320" stroke-width="1.5" />
+
+  <!-- CRT Screen Bezel -->
+  <rect x="94" y="64" width="232" height="182" fill="#0B0B09" stroke="#9EC7BB" stroke-width="1" />
+
+  <!-- CRT Scanlines (Stepped horizontal grid lines) -->
+  <g stroke="#232320" stroke-width="1" opacity="0.6">
+    <line x1="94" y1="80" x2="326" y2="80" />
+    <line x1="94" y1="96" x2="326" y2="96" />
+    <line x1="94" y1="112" x2="326" y2="112" />
+    <line x1="94" y1="128" x2="326" y2="128" />
+    <line x1="94" y1="144" x2="326" y2="144" />
+    <line x1="94" y1="160" x2="326" y2="160" />
+    <line x1="94" y1="176" x2="326" y2="176" />
+    <line x1="94" y1="192" x2="326" y2="192" />
+    <line x1="94" y1="208" x2="326" y2="208" />
+    <line x1="94" y1="224" x2="326" y2="224" />
+    <line x1="94" y1="240" x2="326" y2="240" />
+  </g>
+
+  <!-- CRT Screen Big Checkmark & Status -->
+  <g fill="#D4F638" filter="url(#term-glow)">
+    <!-- Glowing phosphor checkmark -->
+    <rect x="150" y="145" width="14" height="14" />
+    <rect x="164" y="159" width="14" height="14" />
+    <rect x="178" y="173" width="14" height="14" />
+    <rect x="192" y="187" width="14" height="14" />
+    <rect x="206" y="173" width="14" height="14" />
+    <rect x="220" y="159" width="14" height="14" />
+    <rect x="234" y="145" width="14" height="14" />
+    <rect x="248" y="131" width="14" height="14" />
+    <rect x="262" y="117" width="14" height="14" />
+  </g>
+
+  <!-- Screen ASCII Text Overlay -->
+  <g fill="#D4F638" font-family="'IBM Plex Mono', monospace" font-size="9" opacity="0.9">
+    <text x="106" y="86">$ stateproof run</text>
+    <text x="106" y="104">&gt; 4/4 PROVEN · EXIT 0</text>
+  </g>
+
+  <g fill="#E8E4D8" font-family="'IBM Plex Mono', monospace" font-size="7" opacity="0.65">
+    <text x="106" y="226">ALL GATES VERIFIED [100%]</text>
+    <text x="106" y="238">REPORT: ./artifacts/proof.html</text>
+  </g>
+
+  <!-- CRT Neck / Pedestal -->
+  <polygon points="170,270 250,270 260,300 160,300" stroke="#E8E4D8" stroke-width="1.5" fill="#12120F" />
+
+  <!-- Base Unit / Workstation Case -->
+  <rect x="50" y="300" width="320" height="70" stroke="#E8E4D8" stroke-width="2" fill="#12120F" />
+  <!-- Floppy slot & air grilles -->
+  <rect x="70" y="318" width="80" height="34" stroke="#232320" stroke-width="1" />
+  <g stroke="#9EC7BB" stroke-width="1" opacity="0.5">
+    <line x1="78" y1="324" x2="78" y2="346" />
+    <line x1="86" y1="324" x2="86" y2="346" />
+    <line x1="94" y1="324" x2="94" y2="346" />
+    <line x1="102" y1="324" x2="102" y2="346" />
+    <line x1="110" y1="324" x2="110" y2="346" />
+    <line x1="118" y1="324" x2="118" y2="346" />
+    <line x1="126" y1="324" x2="126" y2="346" />
+    <line x1="134" y1="324" x2="134" y2="346" />
+    <line x1="142" y1="324" x2="142" y2="346" />
+  </g>
+
+  <!-- Disk Drive / Button -->
+  <rect x="220" y="322" width="120" height="24" stroke="#232320" stroke-width="1" />
+  <line x1="230" y1="334" x2="310" y2="334" stroke="#9EC7BB" stroke-width="2" />
+  <rect x="320" y="331" width="8" height="6" fill="#D4F638" />
+
+  <!-- Power LED -->
+  <rect x="175" y="330" width="8" height="8" fill="#D4F638" filter="url(#term-glow)" />
+
+  <!-- Disintegrating Pixel Crumbs / Particle Stream off the right side -->
+  <g fill="#D4F638" opacity="0.8">
+    <rect x="365" y="80" width="4" height="4" />
+    <rect x="380" y="110" width="3" height="3" />
+    <rect x="395" y="95" width="4" height="4" />
+    <rect x="372" y="145" width="4" height="4" />
+    <rect x="388" y="160" width="3" height="3" />
+    <rect x="408" y="130" width="4" height="4" />
+    <rect x="376" y="210" width="4" height="4" />
+    <rect x="396" y="190" width="3" height="3" />
+    <rect x="415" y="225" width="4" height="4" />
+  </g>
+
+  <g fill="#9EC7BB" opacity="0.6">
+    <rect x="360" y="60" width="3" height="3" />
+    <rect x="390" y="75" width="3" height="3" />
+    <rect x="402" y="165" width="3" height="3" />
+    <rect x="384" y="240" width="3" height="3" />
+  </g>
+</svg>

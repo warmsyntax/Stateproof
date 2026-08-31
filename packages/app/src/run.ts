@@ -40,6 +40,7 @@ export interface AppRunOptions {
   baselineDir?: string | undefined;
   diffThreshold?: number | undefined;
   workers?: number | undefined;
+  headless?: boolean | undefined;
   skipNetworkCheck?: boolean | undefined;
   stateproofVersion?: string | undefined;
 }
@@ -114,6 +115,7 @@ export async function executeRun(options: AppRunOptions): Promise<AppRunResult> 
     baselineDir: options.baselineDir,
     diffThreshold: options.diffThreshold,
     workers: options.workers,
+    headless: options.headless,
     selectedScenarioIds: selectedScenarios.map((s) => s.id),
     selectedViewportNames: selectedViewports.map((v) => v.name),
   });
