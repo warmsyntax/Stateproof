@@ -766,10 +766,10 @@ export async function runScenarios(options: RunOptions): Promise<RunOutput> {
       while (true) {
         if (isAborted) break;
         const i = nextIndex++;
-        if (i >= pairs.length) break;
+        if (i >= pairs.length || isAborted) break;
 
         const currentPair = pairs[i];
-        if (!currentPair) break;
+        if (!currentPair || isAborted) break;
         const { scenario, viewport } = currentPair;
 
         const effectiveTimeout =

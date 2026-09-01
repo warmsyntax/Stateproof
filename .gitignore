@@ -1,29 +1,18 @@
-# Dependencies & build outputs
 node_modules/
 dist/
 *.tsbuildinfo
-
-# Stateproof generated artifacts & test runs
 artifacts/
 coverage/
 *.log
-
-# Local developer environments & internal notes
 venv/
 .env
 .env.local
 .env.*.local
 talk.txt
-
-# Tooling caches & workspace configs
 .wrangler/
 .agents/
 .aider-desk/
 skills-lock.json
-
-# OS generated files
 .DS_Store
 Thumbs.db
-upgraded_design_stateproof/ 
-docs/
-landing-site/
+

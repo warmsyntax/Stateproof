@@ -1,1 +1,1 @@
-export const STATEPROOF_VERSION = '0.2.1';
+export const STATEPROOF_VERSION = '0.2.3';

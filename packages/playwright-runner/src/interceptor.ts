@@ -1,4 +1,4 @@
-import { matchesRequest, type RequestRule, type ResponseRule } from '@stateproof-dev/core';
+import { compileMatcher, matchesRequest, type RequestRule, type ResponseRule } from '@stateproof-dev/core';
 import type { Page, Route } from 'playwright';
 import { classifyRequest, contentTypeForFixturePath } from './classify.js';
 
@@ -190,15 +190,103 @@ export async function installWebSocketInterceptor(
   wsRule: { urlPattern: string; mode: 'drop-connection' | 'close'; afterMs?: number | undefined },
 ): Promise<WebSocketInterceptorHandle> {
   let socketIntercepted = false;
+
+  const matchesUrl = (url: string): boolean => {
+    try {
+      const pathname = new URL(url, 'http://localhost').pathname;
+      const matcher = compileMatcher(wsRule.urlPattern);
+      if (matcher(pathname)) return true;
+    } catch {
+      // Ignore URL parse error
+    }
+    if (wsRule.urlPattern === '*' || wsRule.urlPattern === '**' || wsRule.urlPattern === '**/*') {
+      return true;
+    }
+    return url.includes(wsRule.urlPattern.replace(/\*/g, ''));
+  };
+
+  // 1. Inject client-side WebSocket hook before document scripts run
+  const scriptContent = `
+    (function(config) {
+      const g = typeof window !== 'undefined' ? window : globalThis;
+      const OriginalWebSocket = g.WebSocket;
+      if (!OriginalWebSocket) return;
+      const matchesWsUrl = function(targetUrl) {
+        if (config.urlPattern === '*' || config.urlPattern === '**' || config.urlPattern === '**/*') {
+          return true;
+        }
+        let pathname = targetUrl;
+        try {
+          pathname = new URL(targetUrl, g.location ? g.location.href : 'http://localhost').pathname;
+        } catch (e) {}
+        var parts = config.urlPattern.split('*').filter(Boolean);
+        if (parts.length === 0) return true;
+        for (var i = 0; i < parts.length; i++) {
+          if (targetUrl.indexOf(parts[i]) === -1 && pathname.indexOf(parts[i]) === -1) {
+            return false;
+          }
+        }
+        return true;
+      };
+
+      g.WebSocket = function(url, protocols) {
+        const ws = new OriginalWebSocket(url, protocols);
+        const urlString = typeof url === 'string' ? url : url.toString();
+
+        if (matchesWsUrl(urlString)) {
+          g.__stateproof_ws_intercepted = true;
+          const delay = config.afterMs || 0;
+          setTimeout(function() {
+            if (config.mode === 'drop-connection') {
+              try {
+                ws.close(1006, 'Connection dropped by Stateproof');
+              } catch (e) {
+                try { ws.close(); } catch (_) {}
+              }
+              try {
+                ws.dispatchEvent(new Event('error'));
+              } catch (_) {}
+            } else {
+              try {
+                ws.close(1000, 'Normal Closure by Stateproof');
+              } catch (e) {
+                try { ws.close(); } catch (_) {}
+              }
+            }
+          }, delay);
+        }
+
+        return ws;
+      };
+
+      g.WebSocket.prototype = OriginalWebSocket.prototype;
+      g.WebSocket.CONNECTING = OriginalWebSocket.CONNECTING;
+      g.WebSocket.OPEN = OriginalWebSocket.OPEN;
+      g.WebSocket.CLOSING = OriginalWebSocket.CLOSING;
+      g.WebSocket.CLOSED = OriginalWebSocket.CLOSED;
+    })(${JSON.stringify({
+      urlPattern: wsRule.urlPattern,
+      mode: wsRule.mode,
+      afterMs: wsRule.afterMs ?? 0,
+    })});
+  `;
+
+  await page.addInitScript(scriptContent);
+
+  // 2. Playwright WebSocket event listener
+  page.on('websocket', (ws) => {
+    if (matchesUrl(ws.url())) {
+      socketIntercepted = true;
+    }
+  });
+
+  // 3. CDP fallback listener for raw transport
   try {
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Network.enable').catch(() => undefined);
 
     cdp.on('Network.webSocketCreated', async (event: { url: string; requestId: string }) => {
-      if (
-        event.url.includes(wsRule.urlPattern.replace(/\*/g, '')) ||
-        wsRule.urlPattern.includes('*')
-      ) {
+      if (matchesUrl(event.url)) {
         socketIntercepted = true;
         const delay = wsRule.afterMs ?? 0;
         if (delay > 0) {
@@ -212,16 +300,6 @@ export async function installWebSocketInterceptor(
   } catch {
     // Non-CDP browsers or CDP attach fail fallback
   }
-
-  page.on('websocket', (ws) => {
-    if (ws.url().includes(wsRule.urlPattern.replace(/\*/g, ''))) {
-      socketIntercepted = true;
-      const delay = wsRule.afterMs ?? 0;
-      setTimeout(() => {
-        // Socket matched
-      }, delay);
-    }
-  });
 
   return {
     socketIntercepted: () => socketIntercepted,

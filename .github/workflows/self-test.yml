@@ -2,9 +2,9 @@ name: Self Test
 
 on:
   push:
-    branches: [main]
+    branches: [main, major, master]
   pull_request:
-    branches: [main]
+    branches: [main, major, master]
 
 jobs:
   self-test:

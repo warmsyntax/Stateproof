@@ -1,6 +1,6 @@
 {
   "name": "@stateproof-dev/core",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "Pure scenario schema, request matching, result model, and card rendering for Stateproof",
   "license": "MIT",
   "publishConfig": {

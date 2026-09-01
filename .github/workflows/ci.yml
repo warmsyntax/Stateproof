@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, major, master]
   pull_request:
-    branches: [main]
+    branches: [main, major, master]
 
 jobs:
   test:
@@ -38,7 +38,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Typecheck and build
-        run: pnpm -r build
+        run: pnpm build
 
       - name: Run all tests
         run: pnpm test

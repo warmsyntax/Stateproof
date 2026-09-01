@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.3/schema/v1.json",
   "name": "vue-account-settings",
   "baseUrl": "http://localhost:5174",
   "route": "/",

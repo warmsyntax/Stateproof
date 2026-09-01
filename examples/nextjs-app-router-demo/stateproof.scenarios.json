@@ -1,5 +1,5 @@
 {
-  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.0/schema/v1.json",
+  "$schema": "https://unpkg.com/@stateproof-dev/core@0.2.3/schema/v1.json",
   "name": "nextjs-account-settings",
   "baseUrl": "http://localhost:3000",
   "route": "/settings",

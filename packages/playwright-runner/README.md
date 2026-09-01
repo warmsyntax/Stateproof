@@ -37,6 +37,6 @@ const result = await runScenarios({
   file: scenarioFile,
   scenarioFilePath: 'stateproof.scenarios.json',
   baseUrl: 'http://localhost:5173',
-  stateproofVersion: '0.1.3',
+  stateproofVersion: '0.2.3',
 });
 ```
