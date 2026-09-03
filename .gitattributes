@@ -1,0 +1,20 @@
+# Auto detect text files and perform LF normalization on checkout
+* text=auto eol=lf
+
+# Force specific web / code formats to LF
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary

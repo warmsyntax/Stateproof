@@ -5,7 +5,10 @@ import { scenarioFileSchema } from './schema.js';
 
 describe('generated JSON Schema drift', () => {
   it('matches the committed schema/v1.json', () => {
-    const committed = readFileSync(new URL('../schema/v1.json', import.meta.url), 'utf-8');
+    const committed = readFileSync(new URL('../schema/v1.json', import.meta.url), 'utf-8').replace(
+      /\r\n/g,
+      '\n',
+    );
     const generated = `${JSON.stringify(
       z.toJSONSchema(scenarioFileSchema, { target: 'draft-7', io: 'input' }),
       null,

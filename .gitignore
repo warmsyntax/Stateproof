@@ -8,11 +8,9 @@ venv/
 .env
 .env.local
 .env.*.local
-talk.txt
 .wrangler/
 .agents/
 .aider-desk/
 skills-lock.json
 .DS_Store
 Thumbs.db
-
